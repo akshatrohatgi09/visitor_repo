@@ -1,0 +1,85 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<configuration scan="true">
+
+    <!-- Spring Boot defaults -->
+    <include resource="org/springframework/boot/logging/logback/defaults.xml"/>
+    <include resource="org/springframework/boot/logging/logback/console-appender.xml"/>
+
+    <!-- Kubernetes / Docker friendly properties -->
+    <springProperty name="POD_NAME" source="POD_NAME" defaultValue="local"/>
+    <property name="LOG_PATH" value="/app/logs"/>
+    <property name="LOG_FILE" value="${LOG_PATH}/${POD_NAME}.log"/>
+
+    <!-- ========================= -->
+    <!-- Rolling File Appender -->
+    <!-- ========================= -->
+    <appender name="FILE-ROLLING"
+              class="ch.qos.logback.core.rolling.RollingFileAppender">
+
+        <file>${LOG_FILE}</file>
+
+        <rollingPolicy
+                class="ch.qos.logback.core.rolling.SizeAndTimeBasedRollingPolicy">
+
+            <fileNamePattern>
+                ${LOG_PATH}/archived/${POD_NAME}.%d{yyyy-MM-dd}.%i.log
+            </fileNamePattern>
+
+            <maxFileSize>100MB</maxFileSize>
+            <totalSizeCap>500MB</totalSizeCap>
+            <maxHistory>365</maxHistory>
+
+        </rollingPolicy>
+
+        <encoder>
+            <pattern>
+                %d{yyyy-MM-dd HH:mm:ss.SSS} %-5level [%thread] %logger{36} - %msg%n
+            </pattern>
+        </encoder>
+    </appender>
+
+    <!-- ========================= -->
+    <!-- Console Appender -->
+    <!-- ========================= -->
+    <appender name="CONSOLE"
+              class="ch.qos.logback.core.ConsoleAppender">
+
+        <encoder>
+            <pattern>
+                %d{HH:mm:ss.SSS} %-5level [%thread] %logger{36} - %msg%n
+            </pattern>
+        </encoder>
+    </appender>
+
+    <!-- ========================= -->
+    <!-- Spring Profiles -->
+    <!-- ========================= -->
+    <springProfile name="prod | cloud-prod | dev | uat | test">
+
+        <!-- Application logs -->
+        <logger name="com.state.psa" level="INFO" additivity="false">
+            <appender-ref ref="FILE-ROLLING"/>
+            <appender-ref ref="CONSOLE"/>
+        </logger>
+
+        <!-- Spring Web -->
+        <logger name="org.springframework.web" level="WARN" additivity="false">
+            <appender-ref ref="FILE-ROLLING"/>
+            <appender-ref ref="CONSOLE"/>
+        </logger>
+
+        <!-- Hibernate -->
+        <logger name="org.hibernate" level="ERROR" additivity="false">
+            <appender-ref ref="FILE-ROLLING"/>
+            <appender-ref ref="CONSOLE"/>
+        </logger>
+
+        <!-- Root logger -->
+        <root level="INFO">
+            <appender-ref ref="CONSOLE"/>
+            <appender-ref ref="FILE-ROLLING"/>
+        </root>
+
+    </springProfile>
+
+</configuration>

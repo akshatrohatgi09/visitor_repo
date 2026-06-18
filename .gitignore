@@ -1,0 +1,64 @@
+# Maven
+target/
+pom.xml.tag
+pom.xml.releaseBackup
+pom.xml.versionsBackup
+pom.xml.next
+release.properties
+
+# Eclipse / STS
+.classpath
+.project
+.settings/
+.springBeans
+.sts4-cache/
+
+# IntelliJ
+.idea/
+*.iml
+
+# VS Code
+.vscode/
+
+# Java
+*.class
+*.jar
+*.war
+*.ear
+
+# Logs
+logs/
+*.log
+
+# OS Files
+.DS_Store
+Thumbs.db
+
+# Application Properties (optional)
+application-local.properties
+application-dev.properties
+
+# Environment Files
+.env
+
+# Generated Files
+bin/
+out/
+
+# Mac
+.AppleDouble
+.LSOverride
+
+# PostgreSQL dumps
+*.sql
+*.backup
+
+# Lombok
+lombok.config
+
+# Temporary Files
+*.tmp
+*.swp
+
+# Maven Wrapper
+.mvn/wrapper/maven-wrapper.jar
