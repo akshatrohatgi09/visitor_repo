@@ -32,4 +32,10 @@ public class UserRequestDTO {
 	private String userAddress;
 
 	private String comment;
+	
+	private String operation;
+	
+	private String loginId;
+	
+	private Long role;
 }

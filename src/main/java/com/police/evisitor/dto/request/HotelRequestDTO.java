@@ -5,6 +5,8 @@ import lombok.Data;
 @Data
 public class HotelRequestDTO {
 
+	private Long hotelId;
+
 	private String hotelName;
 	private String ownerName;
 	private String mobileNo;
@@ -22,4 +24,7 @@ public class HotelRequestDTO {
 	private String hotelDistrictName;
 
 	private String comment;
+
+	private String operation;
+	private String loginUser;
 }

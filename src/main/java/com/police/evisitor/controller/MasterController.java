@@ -30,4 +30,16 @@ public class MasterController {
 		return ResponseEntity.ok(masterService.getPoliceStations(stateCd, districtCd));
 	}
 
+	@GetMapping("/documentList")
+	public ResponseEntity<?> getDocumentList() {
+
+		return ResponseEntity.ok(masterService.getDocumentList());
+	}
+
+	@GetMapping("/visitReasonList")
+	public ResponseEntity<?> getVisitReasonList() {
+
+		return ResponseEntity.ok(masterService.getVisitReasonList());
+	}
+
 }

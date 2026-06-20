@@ -7,6 +7,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
@@ -45,5 +46,32 @@ public class HotelController {
 
 		return ResponseEntity.ok(hotelService.getHotels(districtCd, psCd));
 	}
+	
+	@PostMapping("deleteHotel")
+    public ResponseEntity<ApiResponse<?>> deleteHotelData(@RequestBody HotelRequestDTO request) {
+        String result = hotelService.deleteHotel(request);
+        ApiResponse<?> apiResponse = ApiResponse.builder()
+                .status(String.valueOf(HttpStatus.OK.value()))
+                .message("Hotel Deleted Successfully")
+                .data(result)
+                .build();
+
+        return ResponseEntity.ok(apiResponse);
+    }
+    
+    
+    @PostMapping("actveInactiveHotel")
+    public ResponseEntity<ApiResponse<?>> activeInactiveHotelData(@RequestBody HotelRequestDTO request) {
+    	
+        String result = hotelService.activeInactiveHotel(request);
+        ApiResponse<?> apiResponse = ApiResponse.builder()
+                .status(String.valueOf(HttpStatus.OK.value()))
+                .message("Success")
+                .data(result)
+                .build();
+
+        return ResponseEntity.ok(apiResponse);
+    }
+
 
 }

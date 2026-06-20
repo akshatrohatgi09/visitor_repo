@@ -13,4 +13,8 @@ public interface HotelService {
 
 	List<Hotel> getHotels(Integer districtCd, Integer psCd);
 
+	String deleteHotel(HotelRequestDTO request);
+
+	String activeInactiveHotel(HotelRequestDTO request);
+
 }
