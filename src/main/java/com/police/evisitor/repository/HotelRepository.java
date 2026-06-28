@@ -18,5 +18,11 @@ public interface HotelRepository extends JpaRepository<Hotel, Long> {
 	Optional<Hotel> findByHotelIdAndRecordStatusNot(Long hotelId, String recordStatus);
 	
 	Optional<Hotel> findByHotelId(Long hotelId);
+	
+	Hotel findByMobileNoAndRecordStatusNot(String mobileNo,String recordStatus);
+
+    Hotel findByEmailIgnoreCaseAndRecordStatusNot(String email,String recordStatus);
+
+	Optional<Hotel> findByHotelNameIgnoreCaseAndRecordStatusNot(String hotel, String string);
 
 }

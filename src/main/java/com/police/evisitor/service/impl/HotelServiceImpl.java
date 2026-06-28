@@ -3,21 +3,30 @@ package com.police.evisitor.service.impl;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import com.police.evisitor.dto.request.HotelRequestDTO;
 import com.police.evisitor.entity.Hotel;
+import com.police.evisitor.entity.StateRepository;
 import com.police.evisitor.entity.User;
 import com.police.evisitor.exception.NotFound;
+import com.police.evisitor.repository.DistrictRepository;
 import com.police.evisitor.repository.HotelRepository;
+import com.police.evisitor.repository.PoliceStationRepository;
+import com.police.evisitor.repository.RangeRepository;
+import com.police.evisitor.repository.SdpoRepository;
 import com.police.evisitor.repository.UserRepository;
+import com.police.evisitor.repository.ZoneRepository;
 import com.police.evisitor.service.HotelService;
 import com.police.evisitor.util.Constants;
 
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class HotelServiceImpl implements HotelService {
@@ -27,34 +36,117 @@ public class HotelServiceImpl implements HotelService {
 	@Autowired
 	private UserRepository userRepository;
 
+	@Autowired
+	private StateRepository stateRepository;
+
+	@Autowired
+	private ZoneRepository zoneRepository;
+
+	@Autowired
+	private RangeRepository rangeRepository;
+
+	@Autowired
+	private DistrictRepository districtRepository;
+
+	@Autowired
+	private SdpoRepository sdpoRepository;
+
+	@Autowired
+	private PoliceStationRepository policeStationRepository;
+
 	@Transactional
 	@Override
 	public void createHotel(HotelRequestDTO req) {
+		try {
+			validateRequest(req);
+			validateMasterData(req);
+			isHotelAlreadyExist(req);
 
-		Hotel hotel = new Hotel();
+			Hotel hotel = Hotel.builder().hotelName(req.getHotelName().trim()).ownerName(req.getOwnerName().trim())
+					.mobileNo(req.getMobileNo().trim())
+					.email(req.getEmail() == null ? null : req.getEmail().trim().toLowerCase())
+					.stateCd(req.getStateCd()).zoneCd(req.getZoneCd()).rangeCd(req.getRangeCd())
+					.districtCd(req.getDistrictCd()).sdpoCd(req.getSdpoCd()).psCd(req.getPsCd())
+					.address(req.getAddress()).comment(req.getComment()).recordStatus("C").createdBy(req.getLoginUser())
+					.build();
 
-		hotel.setHotelName(req.getHotelName());
-		hotel.setOwnerName(req.getOwnerName());
-		hotel.setMobileNo(req.getMobileNo());
-		hotel.setEmail(req.getEmail());
+			hotelRepo.save(hotel);
+			log.info("Hotel Created Successfully : {}", hotel.getHotelName());
 
-		hotel.setStateCd(req.getStateCd());
-		hotel.setDistrictCd(req.getDistrictCd());
-		hotel.setPsCd(req.getPsCd());
+		} catch (Exception e) {
+			log.error("Error while creating hotel : {}", req, e);
+			throw new RuntimeException(e.getMessage());
 
-		hotel.setAddress(req.getAddress());
+		}
+	}
 
-		hotel.setHotelTypeId(req.getHotelTypeId());
+	private void isHotelAlreadyExist(HotelRequestDTO req) {
 
-		hotel.setHotelPsName(req.getHotelPsName());
-		hotel.setHotelDistrictName(req.getHotelDistrictName());
+		Hotel hotel = hotelRepo.findByMobileNoAndRecordStatusNot(req.getMobileNo(), "D");
 
-		hotel.setComment(req.getComment());
+		if (hotel != null)
+			throw new RuntimeException("Mobile Number already exists.");
 
-		hotel.setRecordStatus("C");
-		hotel.setCreatedBy(req.getLoginUser());
+		if (StringUtils.isNotBlank(req.getEmail())) {
 
-		hotelRepo.save(hotel);
+			hotel = hotelRepo.findByEmailIgnoreCaseAndRecordStatusNot(req.getEmail(), "D");
+
+			if (hotel != null)
+				throw new RuntimeException("Email already exists.");
+		}
+	}
+
+	private void validateMasterData(HotelRequestDTO req) {
+
+		stateRepository.findByStateCdAndRecordStatusNot(req.getStateCd(), "D")
+				.orElseThrow(() -> new RuntimeException("Invalid State"));
+
+		zoneRepository.findByZoneCdAndRecordStatusNot(req.getZoneCd(), "D")
+				.orElseThrow(() -> new RuntimeException("Invalid Zone"));
+
+		rangeRepository.findByRangeCdAndRecordStatusNot(req.getRangeCd(), "D")
+				.orElseThrow(() -> new RuntimeException("Invalid Range"));
+
+		districtRepository.findByDistrictCdAndRecordStatusNot(req.getDistrictCd(), "D")
+				.orElseThrow(() -> new RuntimeException("Invalid District"));
+
+		sdpoRepository.findBySdpoCdAndRecordStatusNot(req.getSdpoCd(), "D")
+				.orElseThrow(() -> new RuntimeException("Invalid SDPO"));
+
+		policeStationRepository.findByPsCdAndRecordStatusNot(req.getPsCd(), "D")
+				.orElseThrow(() -> new RuntimeException("Invalid Police Station"));
+
+	}
+
+	private void validateRequest(HotelRequestDTO req) {
+
+		if (StringUtils.isBlank(req.getHotelName()))
+			throw new RuntimeException("Hotel Name is required.");
+
+		if (StringUtils.isBlank(req.getOwnerName()))
+			throw new RuntimeException("Owner Name is required.");
+
+		if (StringUtils.isBlank(req.getMobileNo()))
+			throw new RuntimeException("Mobile Number is required.");
+
+		if (req.getStateCd() == null)
+			throw new RuntimeException("State is required.");
+
+		if (req.getZoneCd() == null)
+			throw new RuntimeException("Zone is required.");
+
+		if (req.getRangeCd() == null)
+			throw new RuntimeException("Range is required.");
+
+		if (req.getDistrictCd() == null)
+			throw new RuntimeException("District is required.");
+
+		if (req.getSdpoCd() == null)
+			throw new RuntimeException("SDPO is required.");
+
+		if (req.getPsCd() == null)
+			throw new RuntimeException("Police Station is required.");
+
 	}
 
 	@Override

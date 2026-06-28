@@ -1,19 +1,49 @@
 package com.police.evisitor.service.impl;
 
+import java.math.BigDecimal;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
 import java.util.Optional;
 
+import org.apache.commons.lang3.StringUtils;
+import org.apache.poi.EncryptedDocumentException;
+import org.apache.poi.ss.usermodel.Cell;
+import org.apache.poi.ss.usermodel.CellType;
+import org.apache.poi.ss.usermodel.DateUtil;
+import org.apache.poi.ss.usermodel.Row;
+import org.apache.poi.ss.usermodel.Sheet;
+import org.apache.poi.ss.usermodel.Workbook;
+import org.apache.poi.ss.usermodel.WorkbookFactory;
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.web.multipart.MultipartFile;
 
 import com.police.evisitor.dto.request.UserRequestDTO;
+import com.police.evisitor.dto.response.BulkUploadResponse;
+import com.police.evisitor.dto.response.ExcelUserDTO;
+import com.police.evisitor.dto.response.FailedUserDTO;
+import com.police.evisitor.entity.District;
 import com.police.evisitor.entity.Hotel;
+import com.police.evisitor.entity.PoliceStation;
+import com.police.evisitor.entity.Range;
 import com.police.evisitor.entity.Role;
+import com.police.evisitor.entity.Sdpo;
+import com.police.evisitor.entity.State;
+import com.police.evisitor.entity.StateRepository;
 import com.police.evisitor.entity.User;
+import com.police.evisitor.entity.Zone;
+import com.police.evisitor.exception.IOException;
 import com.police.evisitor.exception.NotFound;
+import com.police.evisitor.repository.DistrictRepository;
 import com.police.evisitor.repository.HotelRepository;
+import com.police.evisitor.repository.PoliceStationRepository;
+import com.police.evisitor.repository.RangeRepository;
 import com.police.evisitor.repository.RoleListRepository;
+import com.police.evisitor.repository.SdpoRepository;
 import com.police.evisitor.repository.UserRepository;
+import com.police.evisitor.repository.ZoneRepository;
 import com.police.evisitor.service.UserService;
 import com.police.evisitor.util.Constants;
 
@@ -36,72 +66,204 @@ public class UserServiceImpl implements UserService {
 	@Autowired
 	private RoleListRepository roleRepository;
 
+	@Autowired
+	private StateRepository stateRepository;
+
+	@Autowired
+	private ZoneRepository zoneRepository;
+
+	@Autowired
+	private RangeRepository rangeRepository;
+
+	@Autowired
+	private DistrictRepository districtRepository;
+
+	@Autowired
+	private SdpoRepository sdpoRepository;
+
+	@Autowired
+	private PoliceStationRepository policeStationRepository;
+
+	private static final List<String> EXPECTED_HEADERS = Arrays.asList("User Name", "Login", "Password", "Mobile",
+			"Email", "Role", "State", "Zone", "Range", "District", "SDPO", "Police Station", "Hotel", "Address",
+			"Comment");
+
 	@Transactional
 	@Override
 	public void saveUser(UserRequestDTO reqDto) {
 
 		try {
 
-			User user = modelMapper.map(reqDto, User.class);
+			log.info("Create User Request : {}", reqDto);
 
-			user.setUserLogin(reqDto.getUserLogin().toLowerCase().trim());
-
-			isUserAlreadyExist(user);
-
+			// Validate Role
 			Role role = roleRepository.findById(reqDto.getRoleId())
 					.orElseThrow(() -> new RuntimeException("Role Not Found : " + reqDto.getRoleId()));
 
-			validateRoleData(role.getRoleId(), reqDto);
+			// Validate hierarchy based on role
+			validateRoleHierarchy(role.getRoleId(), reqDto);
 
-			// Save role id directly
+			// Validate master data
+			validateMasterData(reqDto);
+
+			User user = modelMapper.map(reqDto, User.class);
+
+			user.setUserLogin(reqDto.getUserLogin().trim().toLowerCase());
+
+			// Duplicate Validation
+			isUserAlreadyExist(user);
+
 			user.setUserRoleId(reqDto.getRoleId());
 
-			// Save hotel id directly
-			if (reqDto.getHotelId() != null && reqDto.getHotelId() > 0) {
-
-				hotelRepo.findById(reqDto.getHotelId())
-						.orElseThrow(() -> new RuntimeException("Hotel Not Found : " + reqDto.getHotelId()));
-
-				user.setHotelCd(reqDto.getHotelId());
-
-			} else {
-				user.setHotelCd(null);
-			}
-
-			user.setRecordStatus('C');
+			user.setStateCd(reqDto.getStateCd());
+			user.setZoneCd(reqDto.getZoneCd());
+			user.setRangeCd(reqDto.getRangeCd());
+			user.setDistrictCd(reqDto.getDistrictCd());
+			user.setSdpoCd(reqDto.getSdpoCd());
+			user.setPsCd(reqDto.getPsCd());
+			user.setHotelCd(reqDto.getHotelId());
 			user.setLoginStatus(Boolean.FALSE);
-
-			user.setCreatedBy("SYSTEM");
-			user.setUpdatedBy("SYSTEM");
+			user.setRecordStatus('C');
+			user.setCreatedBy(reqDto.getLoginId());
 
 			userRepo.save(user);
-
-			log.info("User created successfully. Login : {}", user.getUserLogin());
+			log.info("User Created Successfully : {}", user.getUserLogin());
 
 		} catch (Exception e) {
+			log.error("Error while creating user : {}", reqDto, e);
+			throw new RuntimeException(e.getMessage());
 
-			log.error("Error while creating user. Request : {}", reqDto, e);
-
-			throw new RuntimeException("Unable to create user : " + e.getMessage(), e);
 		}
 	}
 
-	private void validateRoleData(Long roleId, UserRequestDTO request) {
+	private void validateMasterData(UserRequestDTO dto) {
 
-		if (roleId == 2 && request.getDistrictCd() == null) {
+		State state = null;
+		Zone zone = null;
+		Range range = null;
+		District district = null;
+		Sdpo sdpo = null;
+		PoliceStation ps = null;
 
-			throw new RuntimeException("District is required");
+		if (dto.getStateCd() != null) {
+			state = stateRepository.findByStateCdAndRecordStatusNot(dto.getStateCd(), "D")
+					.orElseThrow(() -> new RuntimeException("Invalid State"));
 		}
 
-		if (roleId == 3 && (request.getDistrictCd() == null || request.getPsCd() == null)) {
+		if (dto.getZoneCd() != null) {
+			zone = zoneRepository.findByZoneCdAndRecordStatusNot(dto.getZoneCd(), "D")
+					.orElseThrow(() -> new RuntimeException("Invalid Zone"));
 
-			throw new RuntimeException("District and PS are required");
+			if (!zone.getStateCd().equals(dto.getStateCd())) {
+				throw new RuntimeException("Zone does not belong to selected State.");
+			}
 		}
 
-		if ((roleId == 4 || roleId == 5) && request.getHotelId() == null) {
+		if (dto.getRangeCd() != null) {
+			range = rangeRepository.findByRangeCdAndRecordStatusNot(dto.getRangeCd(), "D")
+					.orElseThrow(() -> new RuntimeException("Invalid Range"));
 
-			throw new RuntimeException("Hotel is required");
+			if (!range.getZoneCd().equals(dto.getZoneCd())) {
+				throw new RuntimeException("Range does not belong to selected Zone.");
+			}
+
 		}
+
+		if (dto.getDistrictCd() != null) {
+			district = districtRepository.findByDistrictCdAndRecordStatusNot(dto.getDistrictCd(), "D")
+					.orElseThrow(() -> new RuntimeException("Invalid District"));
+
+			if (!district.getRangeCd().equals(dto.getRangeCd())) {
+				throw new RuntimeException("District does not belong to selected Range.");
+			}
+
+		}
+
+		if (dto.getSdpoCd() != null) {
+			sdpo = sdpoRepository.findBySdpoCdAndRecordStatusNot(dto.getSdpoCd(), "D")
+					.orElseThrow(() -> new RuntimeException("Invalid SDPO"));
+
+			if (!sdpo.getDistrictCd().equals(dto.getDistrictCd())) {
+				throw new RuntimeException("SDPO does not belong to selected District.");
+			}
+
+		}
+
+		if (dto.getPsCd() != null) {
+			ps = policeStationRepository.findByPsCdAndRecordStatusNot(dto.getPsCd(), "D")
+					.orElseThrow(() -> new RuntimeException("Invalid Police Station"));
+
+			if (!ps.getSdpoCd().equals(dto.getSdpoCd())) {
+				throw new RuntimeException("Police Station does not belong to selected SDPO.");
+			}
+
+		}
+
+		if (dto.getHotelId() != null) {
+			Hotel hotel = hotelRepo.findByHotelIdAndRecordStatusNot(dto.getHotelId(), Constants.D)
+					.orElseThrow(() -> new NotFound("Hotel Not Found With ID: " + dto.getHotelId()));
+
+			if (!hotel.getPsCd().equals(dto.getPsCd())) {
+				throw new RuntimeException("Hotel does not belong to selected Police Station.");
+			}
+		}
+
+	}
+
+	private void validateRoleHierarchy(Long roleId, UserRequestDTO dto) {
+		switch (roleId.intValue()) {
+
+		case 1:
+			break;
+		case 2:
+			if (dto.getStateCd() == null)
+				throw new RuntimeException("State is required.");
+			break;
+		case 3:
+			if (dto.getStateCd() == null || dto.getZoneCd() == null)
+				throw new RuntimeException("State and Zone are required.");
+			break;
+		case 4:
+			if (dto.getStateCd() == null || dto.getZoneCd() == null || dto.getRangeCd() == null)
+				throw new RuntimeException("State, Zone and Range are required.");
+			break;
+		case 5:
+			if (dto.getStateCd() == null || dto.getZoneCd() == null || dto.getRangeCd() == null
+					|| dto.getDistrictCd() == null)
+				throw new RuntimeException("State, Zone, Range and District are required.");
+			break;
+		case 6:
+			if (dto.getStateCd() == null || dto.getZoneCd() == null || dto.getRangeCd() == null
+					|| dto.getDistrictCd() == null || dto.getSdpoCd() == null)
+				throw new RuntimeException("State, Zone, Range, District and SDPO are required.");
+			break;
+		case 7:
+			if (dto.getStateCd() == null || dto.getZoneCd() == null || dto.getRangeCd() == null
+					|| dto.getDistrictCd() == null || dto.getSdpoCd() == null || dto.getPsCd() == null)
+				throw new RuntimeException("Complete Police hierarchy is required.");
+			break;
+
+		case 8:
+			if (dto.getStateCd() == null || dto.getZoneCd() == null || dto.getRangeCd() == null
+					|| dto.getDistrictCd() == null || dto.getSdpoCd() == null || dto.getPsCd() == null
+					|| dto.getHotelId() == null) {
+				throw new RuntimeException(
+						"State, Zone, Range, District, SDPO, Police Station and Hotel are required.");
+			}
+			break;
+		case 9:
+			if (dto.getStateCd() == null || dto.getZoneCd() == null || dto.getRangeCd() == null
+					|| dto.getDistrictCd() == null || dto.getSdpoCd() == null || dto.getPsCd() == null
+					|| dto.getHotelId() == null) {
+				throw new RuntimeException(
+						"State, Zone, Range, District, SDPO, Police Station and Hotel are required.");
+			}
+			break;
+
+		default:
+			throw new RuntimeException("Invalid Role");
+		}
+
 	}
 
 	private void isUserAlreadyExist(User user) {
@@ -178,7 +340,7 @@ public class UserServiceImpl implements UserService {
 			}
 
 			userData.setUpdatedBy(userRequest.getLoginId());
-			userData.setComment(userRequest.getComment());
+			userData.setComments(userRequest.getComment());
 		} else {
 			throw new RuntimeException("Action is not allowed for the roleId : " + roleId);
 		}
@@ -214,6 +376,298 @@ public class UserServiceImpl implements UserService {
 		} else {
 			userData.setLoginStatus(Constants.False);
 		}
+	}
+
+	@Override
+	@Transactional
+	public BulkUploadResponse bulkUploadUsers(MultipartFile file, String loginId) {
+
+		log.info("Bulk User Upload Started By : {}", loginId);
+
+		List<FailedUserDTO> failedUsers = new ArrayList<>();
+
+		int totalRecords = 0;
+		int successCount = 0;
+		int failedCount = 0;
+
+		try {
+
+			if (file == null || file.isEmpty()) {
+				throw new RuntimeException("Please upload a valid excel file.");
+			}
+
+			validateExcelHeader(file);
+
+			List<ExcelUserDTO> excelUsers = readExcel(file);
+
+			if (excelUsers == null || excelUsers.isEmpty()) {
+				throw new RuntimeException("No records found in excel.");
+			}
+
+			totalRecords = excelUsers.size();
+
+			for (ExcelUserDTO excelUser : excelUsers) {
+
+				try {
+					UserRequestDTO request = convertNamesToIds(excelUser);
+					request.setLoginId(loginId);
+					saveUser(request);
+					successCount++;
+					log.info("User Created Successfully : {}", request.getUserLogin());
+				} catch (Exception ex) {
+					failedCount++;
+					log.error("Row {} Failed : {}", excelUser.getRowNo(), ex.getMessage());
+					failedUsers.add(FailedUserDTO.builder().rowNo(excelUser.getRowNo())
+							.userName(excelUser.getUserName()).login(excelUser.getLogin()).mobile(excelUser.getMobile())
+							.email(excelUser.getEmail()).role(excelUser.getRole()).state(excelUser.getState())
+							.zone(excelUser.getZone()).range(excelUser.getRange()).district(excelUser.getDistrict())
+							.sdpo(excelUser.getSdpo()).policeStation(excelUser.getPoliceStation())
+							.hotel(excelUser.getHotel()).address(excelUser.getAddress()).comment(excelUser.getComment())
+							.reason(ex.getMessage()).build());
+				}
+			}
+
+			log.info("Bulk Upload Completed. Total : {}, Success : {}, Failed : {}", totalRecords, successCount,
+					failedCount);
+			return BulkUploadResponse.builder().totalRecords(totalRecords).successCount(successCount)
+					.failedCount(failedCount).failedUsers(failedUsers).build();
+		} catch (Exception e) {
+			log.error("Bulk Upload Failed.", e);
+			throw new RuntimeException("Bulk Upload Failed : " + e.getMessage(), e);
+		}
+
+	}
+
+	private void validateExcelHeader(MultipartFile file) {
+
+		log.info("Validating uploaded excel headers.");
+
+		try (Workbook workbook = WorkbookFactory.create(file.getInputStream())) {
+
+			Sheet sheet = workbook.getSheetAt(0);
+
+			if (sheet == null) {
+				throw new RuntimeException("Excel sheet not found.");
+			}
+
+			Row headerRow = sheet.getRow(0);
+
+			if (headerRow == null) {
+				throw new RuntimeException("Header row is missing.");
+			}
+
+			for (int i = 0; i < EXPECTED_HEADERS.size(); i++) {
+
+				Cell cell = headerRow.getCell(i);
+
+				String actualHeader = (cell == null) ? "" : cell.getStringCellValue().trim();
+
+				String expectedHeader = EXPECTED_HEADERS.get(i);
+
+				if (!expectedHeader.equalsIgnoreCase(actualHeader)) {
+
+					String errorMsg = String.format("Invalid header at column %d. Expected '%s' but found '%s'.", i + 1,
+							expectedHeader, actualHeader);
+
+					log.error(errorMsg);
+
+					throw new RuntimeException(errorMsg);
+				}
+			}
+
+			log.info("Excel header validation completed successfully.");
+
+		} catch (EncryptedDocumentException e) {
+
+			log.error("Uploaded excel file is encrypted.", e);
+			throw new RuntimeException("Encrypted excel files are not supported.");
+
+		} catch (IOException e) {
+
+			log.error("Unable to read uploaded excel file.", e);
+			throw new RuntimeException("Unable to read uploaded excel file.");
+
+		} catch (Exception e) {
+
+			log.error("Error while validating excel header.", e);
+			throw new RuntimeException(e.getMessage(), e);
+
+		}
+
+	}
+
+	private List<ExcelUserDTO> readExcel(MultipartFile file) {
+
+		List<ExcelUserDTO> users = new ArrayList<>();
+		try (Workbook workbook = WorkbookFactory.create(file.getInputStream())) {
+			Sheet sheet = workbook.getSheetAt(0);
+			for (int i = 1; i <= sheet.getLastRowNum(); i++) {
+
+				Row row = sheet.getRow(i);
+				if (row == null || isRowEmpty(row)) {
+					continue;
+				}
+
+				ExcelUserDTO dto = new ExcelUserDTO();
+
+				dto.setRowNo(i + 1);
+				dto.setUserName(getCellValue(row.getCell(0)));
+				dto.setLogin(getCellValue(row.getCell(1)));
+				dto.setPassword(getCellValue(row.getCell(2)));
+				dto.setMobile(getCellValue(row.getCell(3)));
+				dto.setEmail(getCellValue(row.getCell(4)));
+				dto.setRole(getCellValue(row.getCell(5)));
+				dto.setState(getCellValue(row.getCell(6)));
+				dto.setZone(getCellValue(row.getCell(7)));
+				dto.setRange(getCellValue(row.getCell(8)));
+				dto.setDistrict(getCellValue(row.getCell(9)));
+				dto.setSdpo(getCellValue(row.getCell(10)));
+				dto.setPoliceStation(getCellValue(row.getCell(11)));
+				dto.setHotel(getCellValue(row.getCell(12)));
+				dto.setAddress(getCellValue(row.getCell(13)));
+				dto.setComment(getCellValue(row.getCell(14)));
+				users.add(dto);
+			}
+
+		} catch (Exception e) {
+			log.error("Error while reading excel.", e);
+			throw new RuntimeException("Invalid Excel File.");
+		}
+		return users;
+	}
+
+	private String getCellValue(Cell cell) {
+
+		if (cell == null) {
+			return "";
+		}
+
+		switch (cell.getCellType()) {
+
+		case STRING:
+			return cell.getStringCellValue().trim();
+		case NUMERIC:
+			if (DateUtil.isCellDateFormatted(cell)) {
+				return cell.getLocalDateTimeCellValue().toString();
+			}
+			return BigDecimal.valueOf(cell.getNumericCellValue()).stripTrailingZeros().toPlainString();
+
+		case BOOLEAN:
+			return String.valueOf(cell.getBooleanCellValue());
+		case FORMULA:
+			return cell.getCellFormula();
+		case BLANK:
+			return "";
+		default:
+			return "";
+
+		}
+	}
+
+	private boolean isRowEmpty(Row row) {
+		if (row == null) {
+			return true;
+		}
+
+		for (int cellNum = row.getFirstCellNum(); cellNum < row.getLastCellNum(); cellNum++) {
+			Cell cell = row.getCell(cellNum);
+			if (cell != null && cell.getCellType() != CellType.BLANK && StringUtils.isNotBlank(getCellValue(cell))) {
+				return false;
+			}
+		}
+		return true;
+	}
+
+	private UserRequestDTO convertNamesToIds(ExcelUserDTO excel) {
+
+		UserRequestDTO dto = new UserRequestDTO();
+
+		dto.setUserName(excel.getUserName());
+		dto.setUserLogin(excel.getLogin());
+		dto.setUserPassword(excel.getPassword());
+		dto.setUserMob(excel.getMobile());
+		dto.setUserEmail(excel.getEmail());
+		dto.setUserAddress(excel.getAddress());
+		dto.setComment(excel.getComment());
+
+		dto.setNationalityCd(80);
+
+		Role role = roleRepository.findByRoleNameIgnoreCaseAndRecordStatusNot(excel.getRole(), "D")
+				.orElseThrow(() -> new RuntimeException("Invalid Role : " + excel.getRole()));
+
+		dto.setRoleId(role.getRoleId());
+
+		if (StringUtils.isNotBlank(excel.getState())) {
+			State state = stateRepository.findByStateNameIgnoreCaseAndRecordStatusNot(excel.getState(), "D")
+					.orElseThrow(() -> new RuntimeException("Invalid State : " + excel.getState()));
+			dto.setStateCd(state.getStateCd());
+		}
+
+		if (StringUtils.isNotBlank(excel.getZone())) {
+			Zone zone = zoneRepository.findByZoneNameIgnoreCaseAndRecordStatusNot(excel.getZone(), "D")
+					.orElseThrow(() -> new RuntimeException("Invalid Zone : " + excel.getZone()));
+			dto.setZoneCd(zone.getZoneCd());
+			if (!zone.getStateCd().equals(dto.getStateCd())) {
+				throw new RuntimeException("Zone does not belong to selected State.");
+			}
+		}
+
+		if (StringUtils.isNotBlank(excel.getRange())) {
+			Range range = rangeRepository.findByRangeNameIgnoreCaseAndRecordStatusNot(excel.getRange(), "D")
+					.orElseThrow(() -> new RuntimeException("Invalid Range : " + excel.getRange()));
+			dto.setRangeCd(range.getRangeCd());
+			if (!range.getZoneCd().equals(dto.getZoneCd())) {
+				throw new RuntimeException("Range does not belong to selected Zone.");
+			}
+		}
+
+		if (StringUtils.isNotBlank(excel.getDistrict())) {
+			District district = districtRepository.findByDistrictIgnoreCaseAndRecordStatusNot(excel.getDistrict(), "D")
+					.orElseThrow(() -> new RuntimeException("Invalid District : " + excel.getDistrict()));
+			dto.setDistrictCd(district.getDistrictCd());
+			if (!district.getRangeCd().equals(dto.getRangeCd())) {
+				throw new RuntimeException("District does not belong to selected Range.");
+			}
+		}
+
+		if (StringUtils.isNotBlank(excel.getSdpo())) {
+
+			Sdpo sdpo = sdpoRepository.findBySdpoNameIgnoreCaseAndRecordStatusNot(excel.getSdpo(), "D")
+					.orElseThrow(() -> new RuntimeException("Invalid SDPO : " + excel.getSdpo()));
+
+			dto.setSdpoCd(sdpo.getSdpoCd());
+
+			if (!sdpo.getDistrictCd().equals(dto.getDistrictCd())) {
+				throw new RuntimeException("SDPO does not belong to selected District.");
+			}
+		}
+
+		if (StringUtils.isNotBlank(excel.getPoliceStation())) {
+
+			PoliceStation ps = policeStationRepository
+					.findByPsIgnoreCaseAndRecordStatusNot(excel.getPoliceStation(), "D")
+					.orElseThrow(() -> new RuntimeException("Invalid Police Station : " + excel.getPoliceStation()));
+
+			dto.setPsCd(ps.getPsCd());
+
+			if (!ps.getSdpoCd().equals(dto.getSdpoCd())) {
+				throw new RuntimeException("Police Station does not belong to selected SDPO.");
+			}
+		}
+
+		if (StringUtils.isNotBlank(excel.getHotel())) {
+
+			Hotel hotel = hotelRepo.findByHotelNameIgnoreCaseAndRecordStatusNot(excel.getHotel(), "D")
+					.orElseThrow(() -> new RuntimeException("Invalid Hotel : " + excel.getHotel()));
+
+			dto.setHotelId(hotel.getHotelId());
+
+			if (!hotel.getPsCd().equals(dto.getPsCd())) {
+				throw new RuntimeException("Hotel does not belong to selected Police Station.");
+			}
+		}
+
+		return dto;
 	}
 
 }

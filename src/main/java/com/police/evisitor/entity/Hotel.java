@@ -5,15 +5,23 @@ import java.time.LocalDateTime;
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
 
-import jakarta.persistence.*;
-import lombok.*;
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.Id;
+import jakarta.persistence.Table;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Data;
+import lombok.NoArgsConstructor;
 
 @Entity
+@Table(name = "t_hotels")
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-@Table(name = "t_hotels")
 public class Hotel {
 
 	@Id
@@ -36,23 +44,23 @@ public class Hotel {
 	@Column(name = "state_cd")
 	private Integer stateCd;
 
+	@Column(name = "zone_cd")
+	private Integer zoneCd;
+
+	@Column(name = "range_cd")
+	private Integer rangeCd;
+
 	@Column(name = "district_cd")
 	private Integer districtCd;
+
+	@Column(name = "sdpo_cd")
+	private Integer sdpoCd;
 
 	@Column(name = "ps_cd")
 	private Integer psCd;
 
 	@Column(name = "address")
 	private String address;
-
-	@Column(name = "hotel_type_id")
-	private Integer hotelTypeId;
-
-	@Column(name = "hotel_ps_name")
-	private String hotelPsName;
-
-	@Column(name = "hotel_district_name")
-	private String hotelDistrictName;
 
 	@Column(name = "comment")
 	private String comment;
@@ -64,7 +72,7 @@ public class Hotel {
 	private String createdBy;
 
 	@CreationTimestamp
-	@Column(name = "created_on")
+	@Column(name = "created_on", updatable = false)
 	private LocalDateTime createdOn;
 
 	@Column(name = "updated_by")

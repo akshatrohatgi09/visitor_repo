@@ -8,8 +8,10 @@ import org.springframework.stereotype.Repository;
 import com.police.evisitor.entity.MasterDocument;
 
 @Repository
-public interface DocumentRepository extends JpaRepository<MasterDocument, Integer> {
+public interface MasterDocumentRepository extends JpaRepository<MasterDocument, Integer> {
 
-	List<MasterDocument> findByRecordStatus(String status);
+	List<MasterDocument> findByRecordStatusNot(String status);
+	
+	MasterDocument findByDocumentIdAndRecordStatusNot(Integer docId, String status);
 
 }

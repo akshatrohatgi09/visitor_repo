@@ -26,7 +26,7 @@ import com.police.evisitor.exception.BadRequest;
 import com.police.evisitor.exception.NotFound;
 import com.police.evisitor.exception.ResourceNotFoundException;
 import com.police.evisitor.repository.DocFileRepository;
-import com.police.evisitor.repository.DocumentRepository;
+import com.police.evisitor.repository.MasterDocumentRepository;
 import com.police.evisitor.service.FileService;
 import com.police.evisitor.util.Constants;
 import com.police.evisitor.util.FileCompressionUtil;
@@ -50,7 +50,7 @@ public class FileServiceImpl implements FileService {
 	private FileCompressionUtil fileCompressionUtil;
 
 	@Autowired
-	private DocumentRepository documentRepo;
+	private MasterDocumentRepository documentRepo;
 
 	@Autowired
 	private DocFileRepository fileRepository;
@@ -168,23 +168,19 @@ public class FileServiceImpl implements FileService {
 
 	public String getFilePathFromProp(String loginId) {
 
-		log.info("envFilePath :: {}", envFilePath);
-		String filePath = envFilePath;
-		String year = String.valueOf(Calendar.getInstance().get(Calendar.YEAR));
-		int month = Calendar.getInstance().get(Calendar.MONTH) + 1;
-		int dayOfMonth = Calendar.getInstance().get(Calendar.DAY_OF_MONTH);
-		String yearMonth = "";
+		Calendar calendar = Calendar.getInstance();
 
-		if (month < 10) {
-			yearMonth = year + "0" + month;
-		} else {
-			yearMonth = year + month;
-		}
+		String year = String.valueOf(calendar.get(Calendar.YEAR));
+		String month = String.format("%02d", calendar.get(Calendar.MONTH) + 1);
+		String day = String.format("%02d", calendar.get(Calendar.DAY_OF_MONTH));
 
-		filePath = filePath.replace("%YYYY%MM%", yearMonth).replace("%LOGIND%", loginId + "").replace("%YY%", year)
-				.replace("%MM%", "" + month).replace("%DD%", dayOfMonth + "");
+		String yearMonth = year + month;
 
-		log.info("file path :: {}", filePath.toString());
+		String filePath = envFilePath.replace("%YYYY%MM%", yearMonth).replace("%YY%", year).replace("%MM%", month)
+				.replace("%DD%", day).replace("%LOGIND%", loginId);
+
+		log.info("Generated File Path : {}", filePath);
+
 		return filePath;
 	}
 

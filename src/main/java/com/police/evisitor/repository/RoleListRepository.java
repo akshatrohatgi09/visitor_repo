@@ -10,7 +10,10 @@ import com.police.evisitor.entity.Role;
 
 @Repository
 public interface RoleListRepository extends JpaRepository<Role, Long> {
+	
 	List<Role> findByRecordStatusNot(String status);
 
 	Optional<Role> findByRoleIdAndRecordStatusNot(Long Id, String recordStatus);
+
+	Optional<Role> findByRoleNameIgnoreCaseAndRecordStatusNot(String role, String string);
 }

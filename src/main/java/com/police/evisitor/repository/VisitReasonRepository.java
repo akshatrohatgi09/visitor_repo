@@ -10,5 +10,5 @@ import com.police.evisitor.entity.VisitReason;
 @Repository
 public interface VisitReasonRepository extends JpaRepository<VisitReason, Integer> {
 
-	List<VisitReason> findByRecordStatus(String status);
+	List<VisitReason> findByRecordStatusNot(String status);
 }

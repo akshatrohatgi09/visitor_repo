@@ -2,16 +2,18 @@ package com.police.evisitor.controller;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.multipart.MultipartFile;
 
 import com.police.evisitor.dto.request.UserRequestDTO;
 import com.police.evisitor.dto.response.ApiResponse;
+import com.police.evisitor.dto.response.BulkUploadResponse;
 import com.police.evisitor.service.UserService;
 
 import lombok.extern.slf4j.Slf4j;
@@ -94,6 +96,16 @@ public class UserController {
 		        .build();
 
 		return ResponseEntity.ok(apiResponse);
+	}
+
+	@PostMapping(value = "/bulkUploadUsers", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+	public ResponseEntity<ApiResponse<?>> bulkUploadUsers(@RequestParam("file") MultipartFile file,
+			@RequestParam("loginId") String loginId) {
+
+		BulkUploadResponse response = userService.bulkUploadUsers(file, loginId);
+
+		return ResponseEntity
+				.ok(ApiResponse.builder().status("SUCCESS").message("Bulk Upload Completed.").data(response).build());
 	}
 
 }

@@ -2,15 +2,13 @@ package com.police.evisitor.entity;
 
 import java.time.LocalDateTime;
 
-import com.fasterxml.jackson.annotation.JsonManagedReference;
+import org.hibernate.annotations.CreationTimestamp;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
-import jakarta.persistence.JoinColumn;
-import jakarta.persistence.OneToOne;
 import jakarta.persistence.Table;
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -45,26 +43,35 @@ public class User {
 	@Column(name = "user_email")
 	private String userEmail;
 
+	@Column(name = "user_role_id")
+	private Long userRoleId;
+
 	@Column(name = "nationality_cd")
 	private Integer nationalityCd;
 
 	@Column(name = "state_cd")
 	private Integer stateCd;
 
+	@Column(name = "zone_cd")
+	private Integer zoneCd;
+
+	@Column(name = "range_cd")
+	private Integer rangeCd;
+
 	@Column(name = "district_cd")
 	private Integer districtCd;
+
+	@Column(name = "sdpo_cd")
+	private Integer sdpoCd;
 
 	@Column(name = "ps_cd")
 	private Integer psCd;
 
-	@Column(name = "user_address")
-	private String userAddress;
-
-	@Column(name = "user_role_id")
-	private Long userRoleId;
-
 	@Column(name = "hotel_cd")
 	private Long hotelCd;
+
+	@Column(name = "user_address")
+	private String userAddress;
 
 	@Column(name = "login_status")
 	private Boolean loginStatus;
@@ -78,7 +85,8 @@ public class User {
 	@Column(name = "created_by")
 	private String createdBy;
 
-	@Column(name = "created_on")
+	@Column(name = "created_on", updatable = false)
+	@CreationTimestamp
 	private LocalDateTime createdOn;
 
 	@Column(name = "updated_by")
@@ -87,10 +95,10 @@ public class User {
 	@Column(name = "updated_on")
 	private LocalDateTime updatedOn;
 
-	@Column(name = "comment")
-	private String comment;
+	@Column(name = "comments")
+	private String comments;
 
 	public void setUserLogin(String userLogin) {
-		this.userLogin = userLogin != null ? userLogin.toLowerCase().trim() : null;
+		this.userLogin = userLogin == null ? null : userLogin.trim().toLowerCase();
 	}
 }

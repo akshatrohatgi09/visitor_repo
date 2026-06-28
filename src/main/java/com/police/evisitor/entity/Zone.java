@@ -11,31 +11,28 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 @Entity
-@Table(name = "m_district")
+@Table(name = "m_zone")
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-public class District {
+public class Zone {
 
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
-	@Column(name = "id")
-	private Long id;
-
-	@Column(name = "district_cd")
-	private Integer districtCd;
-
-	@Column(name = "state_cd")
-	private Integer stateCd;
+	@Column(name = "zone_id")
+	private Long zoneId;
 
 	@Column(name = "zone_cd")
 	private Integer zoneCd;
 
-	@Column(name = "range_cd")
-	private Integer rangeCd;
+	@Column(name = "state_cd")
+	private Integer stateCd;
 
-	@Column(name = "district")
-	private String district;
+	@Column(name = "zone_name")
+	private String zoneName;
+
+	@Column(name = "zone_description")
+	private String zoneDescription;
 
 	@Column(name = "record_status")
 	private String recordStatus;

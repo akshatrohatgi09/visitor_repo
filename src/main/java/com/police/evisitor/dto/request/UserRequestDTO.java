@@ -21,7 +21,13 @@ public class UserRequestDTO {
 
 	private Integer stateCd;
 
+	private Integer zoneCd;
+
+	private Integer rangeCd;
+
 	private Integer districtCd;
+
+	private Integer sdpoCd;
 
 	private Integer psCd;
 
@@ -32,10 +38,10 @@ public class UserRequestDTO {
 	private String userAddress;
 
 	private String comment;
-	
+
 	private String operation;
-	
+
 	private String loginId;
-	
+
 	private Long role;
 }
