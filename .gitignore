@@ -1,13 +1,14 @@
 # Maven
 target/*
+!target/*.jar
+
 pom.xml.tag
 pom.xml.releaseBackup
 pom.xml.versionsBackup
 pom.xml.next
 release.properties
 
-# But do not ignore jar files
-!target/*.jar
+
 
 # Eclipse / STS
 .classpath
@@ -26,6 +27,7 @@ release.properties
 # Java
 *.class
 *.jar
+!target/*.jar
 *.war
 *.ear
 
