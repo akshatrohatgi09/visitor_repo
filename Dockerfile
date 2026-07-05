@@ -8,7 +8,7 @@ WORKDIR /app
 COPY target/evisitor-1.0.0.jar /app/app.jar
 
 # Expose the port that the Spring Boot application runs on (default 8080)
-EXPOSE 8748
+EXPOSE 8006
 
 # Command to run the JAR file
 ENTRYPOINT ["java", "-jar", "/app/app.jar"]
