@@ -126,7 +126,7 @@ public class RoleServiceImpl implements RoleService {
 
 	@Override
 	public List<RoleResponseDTO> fetchRoleList() {
-		List<Role> roles = roleListRepo.findByRecordStatusNot(Constants.D);
+		List<Role> roles = roleListRepo.findByRecordStatusNotOrderByRoleIdAsc(Constants.D);
 		if (roles.isEmpty()) {
 			return List.of();
 		}
