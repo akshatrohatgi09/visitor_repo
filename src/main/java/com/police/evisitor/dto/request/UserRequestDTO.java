@@ -7,7 +7,9 @@ public class UserRequestDTO {
 
 	private Long userId;
 
-	private String userName;
+	private String firstName;
+	
+	private String lastName;
 
 	private String userLogin;
 
@@ -36,6 +38,8 @@ public class UserRequestDTO {
 	private Long roleId;
 
 	private String userAddress;
+	
+	private String pincode;
 
 	private String comment;
 

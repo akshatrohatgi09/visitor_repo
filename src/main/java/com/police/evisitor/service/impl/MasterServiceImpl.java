@@ -109,7 +109,7 @@ public class MasterServiceImpl implements MasterService {
 
 	@Override
 	public List<Role> getRoleList() {
-		List<Role> roles = roleListRepo.findByRecordStatusNot(Constants.D);
+		List<Role> roles = roleListRepo.findByRecordStatusNotOrderByRoleIdAsc(Constants.D);
 		return roles;
 	}
 

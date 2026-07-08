@@ -28,8 +28,11 @@ public class User {
 	@Column(name = "user_id")
 	private Long userId;
 
-	@Column(name = "user_name")
-	private String userName;
+	@Column(name = "first_name")
+	private String firstName;
+	
+	@Column(name = "last_name")
+	private String lastName;
 
 	@Column(name = "user_login")
 	private String userLogin;
@@ -72,6 +75,9 @@ public class User {
 
 	@Column(name = "user_address")
 	private String userAddress;
+	
+	@Column(name = "pincode")
+	private String pincode;
 
 	@Column(name = "login_status")
 	private Boolean loginStatus;

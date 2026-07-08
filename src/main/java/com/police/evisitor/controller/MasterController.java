@@ -76,7 +76,7 @@ public class MasterController {
 				.status(String.valueOf(HttpStatus.OK)).data(roleList).build();
 		return ResponseEntity.ok(apiResponse);
 	}
-	
+
 	@GetMapping("/menuList")
 	public ResponseEntity<ApiResponse<?>> getMenuList() {
 

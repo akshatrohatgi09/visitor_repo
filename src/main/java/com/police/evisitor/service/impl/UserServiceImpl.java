@@ -17,13 +17,18 @@ import org.apache.poi.ss.usermodel.Workbook;
 import org.apache.poi.ss.usermodel.WorkbookFactory;
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
+import com.police.evisitor.dto.request.UserListRequestDTO;
 import com.police.evisitor.dto.request.UserRequestDTO;
 import com.police.evisitor.dto.response.BulkUploadResponse;
 import com.police.evisitor.dto.response.ExcelUserDTO;
 import com.police.evisitor.dto.response.FailedUserDTO;
+import com.police.evisitor.dto.response.UserListResponseDTO;
 import com.police.evisitor.entity.District;
 import com.police.evisitor.entity.Hotel;
 import com.police.evisitor.entity.PoliceStation;
@@ -42,6 +47,7 @@ import com.police.evisitor.repository.PoliceStationRepository;
 import com.police.evisitor.repository.RangeRepository;
 import com.police.evisitor.repository.RoleListRepository;
 import com.police.evisitor.repository.SdpoRepository;
+import com.police.evisitor.repository.UserListProjection;
 import com.police.evisitor.repository.UserRepository;
 import com.police.evisitor.repository.ZoneRepository;
 import com.police.evisitor.service.UserService;
@@ -84,9 +90,9 @@ public class UserServiceImpl implements UserService {
 	@Autowired
 	private PoliceStationRepository policeStationRepository;
 
-	private static final List<String> EXPECTED_HEADERS = Arrays.asList("User Name", "Login", "Password", "Mobile",
-			"Email", "Role", "State", "Zone", "Range", "District", "SDPO", "Police Station", "Hotel", "Address",
-			"Comment");
+	private static final List<String> EXPECTED_HEADERS = Arrays.asList("Fist Name", "Last Name", "Login", "Password",
+			"Mobile", "Email", "Role", "State", "Zone", "Range", "District", "SDPO", "Police Station", "Hotel",
+			"Address", "Pincode", "Comment");
 
 	@Transactional
 	@Override
@@ -418,12 +424,13 @@ public class UserServiceImpl implements UserService {
 					failedCount++;
 					log.error("Row {} Failed : {}", excelUser.getRowNo(), ex.getMessage());
 					failedUsers.add(FailedUserDTO.builder().rowNo(excelUser.getRowNo())
-							.userName(excelUser.getUserName()).login(excelUser.getLogin()).mobile(excelUser.getMobile())
-							.email(excelUser.getEmail()).role(excelUser.getRole()).state(excelUser.getState())
-							.zone(excelUser.getZone()).range(excelUser.getRange()).district(excelUser.getDistrict())
-							.sdpo(excelUser.getSdpo()).policeStation(excelUser.getPoliceStation())
-							.hotel(excelUser.getHotel()).address(excelUser.getAddress()).comment(excelUser.getComment())
-							.reason(ex.getMessage()).build());
+							.firstName(excelUser.getFirstName()).lastName(excelUser.getLastName())
+							.login(excelUser.getLogin()).mobile(excelUser.getMobile()).email(excelUser.getEmail())
+							.role(excelUser.getRole()).state(excelUser.getState()).zone(excelUser.getZone())
+							.range(excelUser.getRange()).district(excelUser.getDistrict()).sdpo(excelUser.getSdpo())
+							.policeStation(excelUser.getPoliceStation()).hotel(excelUser.getHotel())
+							.address(excelUser.getAddress()).comment(excelUser.getComment()).reason(ex.getMessage())
+							.build());
 				}
 			}
 
@@ -511,21 +518,22 @@ public class UserServiceImpl implements UserService {
 				ExcelUserDTO dto = new ExcelUserDTO();
 
 				dto.setRowNo(i + 1);
-				dto.setUserName(getCellValue(row.getCell(0)));
-				dto.setLogin(getCellValue(row.getCell(1)));
-				dto.setPassword(getCellValue(row.getCell(2)));
-				dto.setMobile(getCellValue(row.getCell(3)));
-				dto.setEmail(getCellValue(row.getCell(4)));
-				dto.setRole(getCellValue(row.getCell(5)));
-				dto.setState(getCellValue(row.getCell(6)));
-				dto.setZone(getCellValue(row.getCell(7)));
-				dto.setRange(getCellValue(row.getCell(8)));
-				dto.setDistrict(getCellValue(row.getCell(9)));
-				dto.setSdpo(getCellValue(row.getCell(10)));
-				dto.setPoliceStation(getCellValue(row.getCell(11)));
-				dto.setHotel(getCellValue(row.getCell(12)));
-				dto.setAddress(getCellValue(row.getCell(13)));
-				dto.setComment(getCellValue(row.getCell(14)));
+				dto.setFirstName(getCellValue(row.getCell(0)));
+				dto.setLastName(getCellValue(row.getCell(1)));
+				dto.setLogin(getCellValue(row.getCell(2)));
+				dto.setPassword(getCellValue(row.getCell(3)));
+				dto.setMobile(getCellValue(row.getCell(4)));
+				dto.setEmail(getCellValue(row.getCell(5)));
+				dto.setRole(getCellValue(row.getCell(6)));
+				dto.setState(getCellValue(row.getCell(7)));
+				dto.setZone(getCellValue(row.getCell(8)));
+				dto.setRange(getCellValue(row.getCell(9)));
+				dto.setDistrict(getCellValue(row.getCell(10)));
+				dto.setSdpo(getCellValue(row.getCell(11)));
+				dto.setPoliceStation(getCellValue(row.getCell(12)));
+				dto.setHotel(getCellValue(row.getCell(13)));
+				dto.setAddress(getCellValue(row.getCell(14)));
+				dto.setComment(getCellValue(row.getCell(15)));
 				users.add(dto);
 			}
 
@@ -582,12 +590,14 @@ public class UserServiceImpl implements UserService {
 
 		UserRequestDTO dto = new UserRequestDTO();
 
-		dto.setUserName(excel.getUserName());
+		dto.setFirstName(excel.getFirstName());
+		dto.setLastName(excel.getLastName());
 		dto.setUserLogin(excel.getLogin());
 		dto.setUserPassword(excel.getPassword());
 		dto.setUserMob(excel.getMobile());
 		dto.setUserEmail(excel.getEmail());
 		dto.setUserAddress(excel.getAddress());
+		dto.setPincode(excel.getPincode());
 		dto.setComment(excel.getComment());
 
 		dto.setNationalityCd(80);
@@ -670,4 +680,104 @@ public class UserServiceImpl implements UserService {
 		return dto;
 	}
 
+	@Override
+	@Transactional()
+	public Page<UserListProjection> listUsers(UserListRequestDTO request) {
+
+		User loginUser = userRepo.findByUserLoginIgnoreCaseAndRecordStatusNot(request.getLoginId(), 'D');
+
+		if (loginUser == null) {
+			throw new RuntimeException("Invalid Login User.");
+		}
+
+		Integer stateCd = request.getStateCd();
+		Integer zoneCd = request.getZoneCd();
+		Integer rangeCd = request.getRangeCd();
+		Integer districtCd = request.getDistrictCd();
+		Integer sdpoCd = request.getSdpoCd();
+		Integer psCd = request.getPsCd();
+		Long hotelCd = request.getHotelCd();
+		Long roleId = request.getRoleId();
+
+		/*
+		 * Apply Role Hierarchy
+		 */
+		switch (loginUser.getUserRoleId().intValue()) {
+
+		case 1:
+			// Admin
+			break;
+
+		case 2:
+			stateCd = loginUser.getStateCd();
+			roleId = 2L;
+			break;
+
+		case 3:
+			stateCd = loginUser.getStateCd();
+			zoneCd = loginUser.getZoneCd();
+			roleId = 3L;
+			break;
+
+		case 4:
+			stateCd = loginUser.getStateCd();
+			zoneCd = loginUser.getZoneCd();
+			rangeCd = loginUser.getRangeCd();
+			roleId = 4L;
+			break;
+
+		case 5:
+			stateCd = loginUser.getStateCd();
+			zoneCd = loginUser.getZoneCd();
+			rangeCd = loginUser.getRangeCd();
+			districtCd = loginUser.getDistrictCd();
+			roleId = 5L;
+			break;
+
+		case 6:
+			stateCd = loginUser.getStateCd();
+			zoneCd = loginUser.getZoneCd();
+			rangeCd = loginUser.getRangeCd();
+			districtCd = loginUser.getDistrictCd();
+			sdpoCd = loginUser.getSdpoCd();
+			roleId = 6L;
+			break;
+
+		case 7:
+			stateCd = loginUser.getStateCd();
+			zoneCd = loginUser.getZoneCd();
+			rangeCd = loginUser.getRangeCd();
+			districtCd = loginUser.getDistrictCd();
+			sdpoCd = loginUser.getSdpoCd();
+			psCd = loginUser.getPsCd();
+			roleId = 7L;
+			break;
+
+		case 8:
+			stateCd = loginUser.getStateCd();
+			zoneCd = loginUser.getZoneCd();
+			rangeCd = loginUser.getRangeCd();
+			districtCd = loginUser.getDistrictCd();
+			sdpoCd = loginUser.getSdpoCd();
+			psCd = loginUser.getPsCd();
+			hotelCd = loginUser.getHotelCd();
+			roleId = 8L;
+			break;
+
+		case 9:
+			hotelCd = loginUser.getHotelCd();
+			roleId = 9L;
+			break;
+
+		default:
+			throw new RuntimeException("Invalid User Role.");
+		}
+
+		Pageable pageable = PageRequest.of(request.getPageNo(), request.getPageSize());
+
+		return userRepo.getUsers(stateCd, zoneCd, rangeCd, districtCd, sdpoCd, psCd, hotelCd, roleId, request.getName(),
+				request.getUserLogin(), request.getMobile(), request.getRecordStatus(), request.getFromDate(),
+				request.getToDate(), pageable);
+
+	}
 }

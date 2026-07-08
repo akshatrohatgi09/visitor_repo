@@ -11,6 +11,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
 
+import com.police.evisitor.dto.request.UserListRequestDTO;
 import com.police.evisitor.dto.request.UserRequestDTO;
 import com.police.evisitor.dto.response.ApiResponse;
 import com.police.evisitor.dto.response.BulkUploadResponse;
@@ -33,32 +34,25 @@ public class UserController {
 
 		return ResponseEntity.ok(ApiResponse.builder().status("SUCCESS").message("User Created Successfully").build());
 	}
-	
+
 	@PostMapping("deleteUser")
-	public ResponseEntity<ApiResponse<?>> deleteUser(@RequestBody UserRequestDTO request){
-		
+	public ResponseEntity<ApiResponse<?>> deleteUser(@RequestBody UserRequestDTO request) {
+
 		userService.deleteUser(request);
-		ApiResponse<?> apiResponse = ApiResponse.builder()
-		        .status(HttpStatus.CREATED.toString())
-		        .message("User Deleted SuccessFully.")
-		        .build();
+		ApiResponse<?> apiResponse = ApiResponse.builder().status(HttpStatus.CREATED.toString())
+				.message("User Deleted SuccessFully.").build();
 
 		return ResponseEntity.ok(apiResponse);
 	}
-
 
 	@PostMapping("actveInactiveUser")
-	public ResponseEntity<ApiResponse<?>> activeInactiveHotelData(@RequestBody UserRequestDTO request){
-		
+	public ResponseEntity<ApiResponse<?>> activeInactiveHotelData(@RequestBody UserRequestDTO request) {
+
 		String result = userService.activeInactiveUser(request);
-		ApiResponse<?> apiResponse = ApiResponse.builder()
-				.status(HttpStatus.OK.toString())
-				.message(result)
-				.build();
+		ApiResponse<?> apiResponse = ApiResponse.builder().status(HttpStatus.OK.toString()).message(result).build();
 
 		return ResponseEntity.ok(apiResponse);
 	}
-
 
 //	@PostMapping("updateUser")
 //	public ResponseEntity<ApiResponse<?>> updateUser(@RequestBody UserRequestDTO request){
@@ -71,29 +65,23 @@ public class UserController {
 //
 //		return ResponseEntity.ok(apiResponse);
 //	}
-	
-	
+
 	@PostMapping("/updateLoginStatus")
-	public ResponseEntity<ApiResponse<?>> updateLoginStatus(@RequestParam("userId") Long userId, @RequestParam("loginStatus") Boolean loginStatus){
-		
-		userService.updateLoginStatus(userId,loginStatus);
-		ApiResponse<?> apiResponse = ApiResponse.builder()
-		        .status(HttpStatus.CREATED.toString())
-		        .message("User Login Data Updated SuccessFully.")
-		        .build();
+	public ResponseEntity<ApiResponse<?>> updateLoginStatus(@RequestParam("userId") Long userId,
+			@RequestParam("loginStatus") Boolean loginStatus) {
+
+		userService.updateLoginStatus(userId, loginStatus);
+		ApiResponse<?> apiResponse = ApiResponse.builder().status(HttpStatus.CREATED.toString())
+				.message("User Login Data Updated SuccessFully.").build();
 
 		return ResponseEntity.ok(apiResponse);
 	}
 
-
 	@PostMapping("/getUser")
-	public ResponseEntity<ApiResponse<?>> getUsers(@RequestBody UserRequestDTO request){
-		
-		ApiResponse<?> apiResponse = ApiResponse.builder()
-		        .status(HttpStatus.CREATED.toString())
-		        .data(userService.getUser(request))
-		        .message("User List Fetched SuccessFully.")
-		        .build();
+	public ResponseEntity<ApiResponse<?>> getUsers(@RequestBody UserRequestDTO request) {
+
+		ApiResponse<?> apiResponse = ApiResponse.builder().status(HttpStatus.CREATED.toString())
+				.data(userService.getUser(request)).message("User List Fetched SuccessFully.").build();
 
 		return ResponseEntity.ok(apiResponse);
 	}
@@ -106,6 +94,14 @@ public class UserController {
 
 		return ResponseEntity
 				.ok(ApiResponse.builder().status("SUCCESS").message("Bulk Upload Completed.").data(response).build());
+	}
+
+	@PostMapping("/listUsers")
+	public ResponseEntity<ApiResponse<?>> listUsers(@RequestBody UserListRequestDTO request) {
+
+		return ResponseEntity.ok(ApiResponse.builder().status("SUCCESS").message("Users fetched successfully.")
+				.data(userService.listUsers(request)).build());
+
 	}
 
 }

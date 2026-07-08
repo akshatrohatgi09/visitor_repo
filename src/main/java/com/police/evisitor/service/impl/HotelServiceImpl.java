@@ -5,14 +5,19 @@ import java.util.List;
 
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
+import com.police.evisitor.dto.request.HotelListRequestDTO;
 import com.police.evisitor.dto.request.HotelRequestDTO;
 import com.police.evisitor.entity.Hotel;
 import com.police.evisitor.entity.StateRepository;
 import com.police.evisitor.entity.User;
 import com.police.evisitor.exception.NotFound;
 import com.police.evisitor.repository.DistrictRepository;
+import com.police.evisitor.repository.HotelListProjection;
 import com.police.evisitor.repository.HotelRepository;
 import com.police.evisitor.repository.PoliceStationRepository;
 import com.police.evisitor.repository.RangeRepository;
@@ -235,6 +240,91 @@ public class HotelServiceImpl implements HotelService {
 			throw new RuntimeException(e);
 		}
 		return response;
+	}
+
+	@Override
+	@Transactional()
+	public Page<HotelListProjection> listHotels(HotelListRequestDTO request) {
+
+		User loginUser = userRepository.findByUserLoginIgnoreCaseAndRecordStatusNot(request.getLoginId(), 'D');
+
+		if (loginUser == null) {
+			throw new RuntimeException("Invalid Login User.");
+		}
+
+		Integer stateCd = request.getStateCd();
+		Integer zoneCd = request.getZoneCd();
+		Integer rangeCd = request.getRangeCd();
+		Integer districtCd = request.getDistrictCd();
+		Integer sdpoCd = request.getSdpoCd();
+		Integer psCd = request.getPsCd();
+		Long hotelCd = request.getHotelCd();
+
+		/*
+		 * Apply Login User Hierarchy
+		 */
+		switch (loginUser.getUserRoleId().intValue()) {
+
+		case 1:
+			break;
+
+		case 2:
+			stateCd = loginUser.getStateCd();
+			break;
+
+		case 3:
+			stateCd = loginUser.getStateCd();
+			zoneCd = loginUser.getZoneCd();
+			break;
+
+		case 4:
+			stateCd = loginUser.getStateCd();
+			zoneCd = loginUser.getZoneCd();
+			rangeCd = loginUser.getRangeCd();
+			break;
+
+		case 5:
+			stateCd = loginUser.getStateCd();
+			zoneCd = loginUser.getZoneCd();
+			rangeCd = loginUser.getRangeCd();
+			districtCd = loginUser.getDistrictCd();
+			break;
+
+		case 6:
+			stateCd = loginUser.getStateCd();
+			zoneCd = loginUser.getZoneCd();
+			rangeCd = loginUser.getRangeCd();
+			districtCd = loginUser.getDistrictCd();
+			sdpoCd = loginUser.getSdpoCd();
+			break;
+
+		case 7:
+			stateCd = loginUser.getStateCd();
+			zoneCd = loginUser.getZoneCd();
+			rangeCd = loginUser.getRangeCd();
+			districtCd = loginUser.getDistrictCd();
+			sdpoCd = loginUser.getSdpoCd();
+			psCd = loginUser.getPsCd();
+			break;
+
+		case 8:
+			hotelCd = loginUser.getHotelCd();
+			break;
+
+		case 9:
+			hotelCd = loginUser.getHotelCd();
+			break;
+
+		default:
+			throw new RuntimeException("Invalid User Role.");
+		}
+
+		Pageable pageable = PageRequest.of(request.getPageNo(), request.getPageSize());
+
+		return hotelRepo.listHotels(stateCd, zoneCd, rangeCd, districtCd, sdpoCd, psCd, hotelCd, request.getHotelName(),
+				request.getOwnerName(), request.getMobileNo(), request.getRecordStatus(), request.getFromDate(),
+				request.getToDate(), pageable);
+
 	}
 
 }

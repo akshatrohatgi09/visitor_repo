@@ -13,7 +13,9 @@ public class ExcelUserDTO {
 
     private Integer rowNo;
 
-    private String userName;
+    private String firstName;
+    
+    private String lastName;
 
     private String login;
 
@@ -40,6 +42,8 @@ public class ExcelUserDTO {
     private String hotel;
 
     private String address;
+    
+    private String pincode;
     
     private String comment;
 

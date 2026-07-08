@@ -11,6 +11,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.police.evisitor.dto.request.HotelListRequestDTO;
 import com.police.evisitor.dto.request.HotelRequestDTO;
 import com.police.evisitor.dto.response.ApiResponse;
 import com.police.evisitor.entity.Hotel;
@@ -45,32 +46,32 @@ public class HotelController {
 
 		return ResponseEntity.ok(hotelService.getHotels(districtCd, psCd));
 	}
-	
+
 	@PostMapping("deleteHotel")
-    public ResponseEntity<ApiResponse<?>> deleteHotelData(@RequestBody HotelRequestDTO request) {
-        String result = hotelService.deleteHotel(request);
-        ApiResponse<?> apiResponse = ApiResponse.builder()
-                .status(String.valueOf(HttpStatus.OK.value()))
-                .message("Hotel Deleted Successfully")
-                .data(result)
-                .build();
+	public ResponseEntity<ApiResponse<?>> deleteHotelData(@RequestBody HotelRequestDTO request) {
+		String result = hotelService.deleteHotel(request);
+		ApiResponse<?> apiResponse = ApiResponse.builder().status(String.valueOf(HttpStatus.OK.value()))
+				.message("Hotel Deleted Successfully").data(result).build();
 
-        return ResponseEntity.ok(apiResponse);
-    }
-    
-    
-    @PostMapping("actveInactiveHotel")
-    public ResponseEntity<ApiResponse<?>> activeInactiveHotelData(@RequestBody HotelRequestDTO request) {
-    	
-        String result = hotelService.activeInactiveHotel(request);
-        ApiResponse<?> apiResponse = ApiResponse.builder()
-                .status(String.valueOf(HttpStatus.OK.value()))
-                .message("Success")
-                .data(result)
-                .build();
+		return ResponseEntity.ok(apiResponse);
+	}
 
-        return ResponseEntity.ok(apiResponse);
-    }
+	@PostMapping("actveInactiveHotel")
+	public ResponseEntity<ApiResponse<?>> activeInactiveHotelData(@RequestBody HotelRequestDTO request) {
 
+		String result = hotelService.activeInactiveHotel(request);
+		ApiResponse<?> apiResponse = ApiResponse.builder().status(String.valueOf(HttpStatus.OK.value()))
+				.message("Success").data(result).build();
+
+		return ResponseEntity.ok(apiResponse);
+	}
+
+	@PostMapping("/listHotels")
+	public ResponseEntity<ApiResponse<?>> listHotels(@RequestBody HotelListRequestDTO request) {
+
+		return ResponseEntity.ok(ApiResponse.builder().status("SUCCESS").message("Hotels fetched successfully.")
+				.data(hotelService.listHotels(request)).build());
+
+	}
 
 }
