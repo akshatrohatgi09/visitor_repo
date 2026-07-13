@@ -85,5 +85,11 @@ public class MasterController {
 				.status(String.valueOf(HttpStatus.OK)).data(menuList).build();
 		return ResponseEntity.ok(apiResponse);
 	}
+	
+	@GetMapping("/allDistricts")
+	public ResponseEntity<?> getAllDistricts() {
+
+		return ResponseEntity.ok(masterService.getAllDistricts());
+	}
 
 }

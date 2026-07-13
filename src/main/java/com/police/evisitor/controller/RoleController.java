@@ -24,7 +24,7 @@ public class RoleController {
 
 	@PostMapping("createRole")
 	public ResponseEntity<ApiResponse<?>> createRoleData(@RequestBody RoleRequestDTO request) {
-		
+
 		int check = roleService.saveRoleList(request);
 		HttpStatus status = (check == 1) ? HttpStatus.CREATED : HttpStatus.BAD_REQUEST;
 		String message = (check == 1) ? "Role Saved Successfully." : "Error In Saving Data";
@@ -36,6 +36,7 @@ public class RoleController {
 
 	@PostMapping("updateRole")
 	public ResponseEntity<ApiResponse<?>> updateRole(@RequestBody RoleRequestDTO request) {
+		
 		int response = roleService.updateRoleList(request);
 		HttpStatus status = (response == 1) ? HttpStatus.CREATED : HttpStatus.BAD_REQUEST;
 		String message = (response == 1) ? "Role Updated Successfully." : "Something Error to Save Data";

@@ -35,4 +35,6 @@ public interface MasterService {
 	
 	public List<Menu> getMenuList();
 
+	List<DistrictDTO> getAllDistricts();
+
 }

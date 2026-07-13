@@ -18,4 +18,6 @@ public interface DistrictRepository extends JpaRepository<District, Long> {
 	List<District> findByRangeCdAndRecordStatusNotOrderByDistrict(Integer rangeCd, String recordStatus);
 
 	Optional<District> findByDistrictIgnoreCaseAndRecordStatusNot(String district, String string);
+	
+	List<District> findByRecordStatusNot(String recordStatus);
 }

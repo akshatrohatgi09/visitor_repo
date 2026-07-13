@@ -119,4 +119,10 @@ public class MasterServiceImpl implements MasterService {
 		menuData.removeIf(menu -> menu.getMenuId() != null && menu.getMenuId() == 6);
 		return menuData;
 	}
+
+	@Override
+	public List<DistrictDTO> getAllDistricts() {
+		return districtRepository.findByRecordStatusNot("D").stream()
+				.map(d -> new DistrictDTO(d.getDistrictCd(), d.getDistrict())).toList();
+	}
 }
