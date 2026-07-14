@@ -48,4 +48,8 @@ public class UserRequestDTO {
 	private String loginId;
 
 	private Long role;
+	
+	private Integer userStateCd;
+
+	private Integer userDistrictCd;
 }

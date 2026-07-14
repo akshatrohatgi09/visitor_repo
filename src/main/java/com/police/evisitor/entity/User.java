@@ -102,7 +102,13 @@ public class User {
 	private LocalDateTime updatedOn;
 
 	@Column(name = "comments")
-	private String comments;
+	private String comment;
+	
+	@Column(name = "user_state_cd")
+	private Integer userStateCd;
+	
+	@Column(name = "user_district_cd")
+	private Integer userDistrictCd;
 
 	public void setUserLogin(String userLogin) {
 		this.userLogin = userLogin == null ? null : userLogin.trim().toLowerCase();

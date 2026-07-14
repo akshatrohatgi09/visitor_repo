@@ -28,7 +28,6 @@ import com.police.evisitor.dto.request.UserRequestDTO;
 import com.police.evisitor.dto.response.BulkUploadResponse;
 import com.police.evisitor.dto.response.ExcelUserDTO;
 import com.police.evisitor.dto.response.FailedUserDTO;
-import com.police.evisitor.dto.response.UserListResponseDTO;
 import com.police.evisitor.entity.District;
 import com.police.evisitor.entity.Hotel;
 import com.police.evisitor.entity.PoliceStation;
@@ -129,6 +128,7 @@ public class UserServiceImpl implements UserService {
 			user.setPsCd(reqDto.getPsCd());
 			user.setHotelCd(reqDto.getHotelId());
 			user.setLoginStatus(Boolean.FALSE);
+			user.setComment(reqDto.getComment());
 			user.setRecordStatus('C');
 			user.setCreatedBy(reqDto.getLoginId());
 
@@ -346,7 +346,7 @@ public class UserServiceImpl implements UserService {
 			}
 
 			userData.setUpdatedBy(userRequest.getLoginId());
-			userData.setComments(userRequest.getComment());
+			userData.setComment(userRequest.getComment());
 		} else {
 			throw new RuntimeException("Action is not allowed for the roleId : " + roleId);
 		}
