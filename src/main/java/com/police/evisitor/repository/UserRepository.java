@@ -55,7 +55,14 @@ public interface UserRepository extends JpaRepository<User, Long> {
 			u.record_status AS recordStatus,
 			u.login_status AS loginStatus,
 			u.created_by AS createdBy,
-			u.created_on AS createdOn
+			u.created_on AS createdOn,
+			u.user_state_cd AS userStateCd,
+			ustd.state_name as userStateName,
+			udist.district as userDistrictName,
+			u.user_district_cd AS userDistrictCd,
+			u.user_address AS userAddress,
+			u.pincode AS pincode,
+			u.comments AS comments
 
 			FROM t_users u
 			JOIN m_roles r
@@ -81,6 +88,12 @@ public interface UserRepository extends JpaRepository<User, Long> {
 
 			LEFT JOIN t_hotels h
 			ON h.hotel_id=u.hotel_cd
+			
+			LEFT JOIN m_state ustd
+			ON ustd.state_cd=u.user_state_cd
+			
+			LEFT JOIN m_district udist
+			ON udist.district_cd=u.user_district_cd
 
 			WHERE u.record_status<>'D'
 

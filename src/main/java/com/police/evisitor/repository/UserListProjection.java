@@ -53,4 +53,13 @@ public interface UserListProjection {
 	String getCreatedBy();
 
 	LocalDateTime getCreatedOn();
+	
+	Integer getUserStateCd();
+	String getUserStateName();
+	Integer getUserDistrictCd();
+	String getUserDistrictName();
+	String getUserAddress();
+	String getPincode();
+	String getComments();
+	
 }
