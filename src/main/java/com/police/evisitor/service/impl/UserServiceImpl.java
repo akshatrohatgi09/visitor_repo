@@ -326,7 +326,7 @@ public class UserServiceImpl implements UserService {
 
 			Hotel hotelData = byHotelId.orElseThrow(() -> new NotFound("Hotel Not Found : " + hotelCd));
 
-			if (Constants.d == (hotelData.getRecordStatus())) {
+			if (Constants.D.equalsIgnoreCase(hotelData.getRecordStatus())) {
 				throw new NotFound("Associated Hotel is Inactive for hotelId : " + hotelCd);
 			}
 		}
