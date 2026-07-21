@@ -19,6 +19,7 @@ import com.police.evisitor.exception.NotFound;
 import com.police.evisitor.repository.DistrictRepository;
 import com.police.evisitor.repository.HotelListProjection;
 import com.police.evisitor.repository.HotelRepository;
+import com.police.evisitor.repository.HotelTypeRepository;
 import com.police.evisitor.repository.PoliceStationRepository;
 import com.police.evisitor.repository.RangeRepository;
 import com.police.evisitor.repository.SdpoRepository;
@@ -58,6 +59,9 @@ public class HotelServiceImpl implements HotelService {
 
 	@Autowired
 	private PoliceStationRepository policeStationRepository;
+
+	@Autowired
+	private HotelTypeRepository hotelTypeRepository;
 
 	@Transactional
 	@Override
@@ -105,7 +109,7 @@ public class HotelServiceImpl implements HotelService {
 
 					.comment(req.getComment())
 
-					.recordStatus('C')
+					.recordStatus("C")
 
 					.createdBy(req.getLoginUser())
 
@@ -185,8 +189,8 @@ public class HotelServiceImpl implements HotelService {
 		districtRepository.findByDistrictCdAndRecordStatusNot(req.getManagerDistrictCd(), "D")
 				.orElseThrow(() -> new RuntimeException("Invalid Manager District"));
 
-//		hotelTypeRepository.findByHotelTypeIdAndRecordStatusNot(req.getHotelTypeId(), "D")
-//				.orElseThrow(() -> new RuntimeException("Invalid Hotel Type"));
+		hotelTypeRepository.findByHotelTypeIdAndRecordStatusNot(req.getHotelTypeId(), "D")
+				.orElseThrow(() -> new RuntimeException("Invalid Hotel Type"));
 
 	}
 
@@ -275,7 +279,7 @@ public class HotelServiceImpl implements HotelService {
 			// Soft Delete Hotel from DataBase
 			Hotel hotel = hotelRepo.findByHotelIdAndRecordStatusNot(hotelId, Constants.D)
 					.orElseThrow(() -> new NotFound("Hotel Not Found With ID: " + hotelId));
-			hotel.setRecordStatus(Constants.c);
+			hotel.setRecordStatus(Constants.D);
 			hotel.setUpdatedBy(request.getLoginUser());
 			hotelRepo.save(hotel);
 
@@ -308,12 +312,12 @@ public class HotelServiceImpl implements HotelService {
 			Hotel hotel = hotelRepo.findByHotelId(hotelId)
 					.orElseThrow(() -> new NotFound("Hotel Not Found With ID: " + hotelId));
 
-			if (hotel.getRecordStatus().equals(Constants.d) && operation.equals("Activate")) {
+			if (hotel.getRecordStatus().equals(Constants.D) && operation.equals("Activate")) {
 
-				hotel.setRecordStatus(Constants.c);
+				hotel.setRecordStatus(Constants.C);
 				response = "Hotel Activated Successfully.";
-			} else if (hotel.getRecordStatus().equals(Constants.c) && operation.equals("Deactivate")) {
-				hotel.setRecordStatus(Constants.c);
+			} else if (hotel.getRecordStatus().equals(Constants.C) && operation.equals("Deactivate")) {
+				hotel.setRecordStatus(Constants.D);
 				response = "Hotel Deactivated Successfully.";
 			} else {
 				throw new RuntimeException(operation + " operation is not suitable for the hotelId : " + hotelId);
@@ -360,12 +364,10 @@ public class HotelServiceImpl implements HotelService {
 		Integer psCd = request.getPsCd();
 		Long hotelCd = request.getHotelCd();
 
-		/*
-		 * Apply Login User Hierarchy
-		 */
 		switch (loginUser.getUserRoleId().intValue()) {
 
 		case 1:
+			// Admin
 			break;
 
 		case 2:
@@ -408,9 +410,6 @@ public class HotelServiceImpl implements HotelService {
 			break;
 
 		case 8:
-			hotelCd = loginUser.getHotelCd();
-			break;
-
 		case 9:
 			hotelCd = loginUser.getHotelCd();
 			break;
@@ -422,9 +421,7 @@ public class HotelServiceImpl implements HotelService {
 		Pageable pageable = PageRequest.of(request.getPageNo(), request.getPageSize());
 
 		return hotelRepo.listHotels(stateCd, zoneCd, rangeCd, districtCd, sdpoCd, psCd, hotelCd, request.getHotelName(),
-				request.getOwnerName(), request.getMobileNo(), request.getRecordStatus(), request.getFromDate(),
-				request.getToDate(), pageable);
-
+				request.getOwnerName(), request.getMobileNo(), request.getFromDate(), request.getToDate(), pageable);
 	}
 
 	@Transactional

@@ -131,7 +131,7 @@ public class Hotel {
 	private String comment;
 
 	@Column(name = "record_status")
-	private Character recordStatus;
+	private String recordStatus;
 
 	@Column(name = "created_by")
 	private String createdBy;

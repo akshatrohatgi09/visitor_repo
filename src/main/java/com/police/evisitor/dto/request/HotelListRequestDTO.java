@@ -18,21 +18,14 @@ public class HotelListRequestDTO {
 	private String loginId;
 
 	private String hotelName;
-
 	private String ownerName;
-
 	private String mobileNo;
 
 	private Integer stateCd;
-
 	private Integer zoneCd;
-
 	private Integer rangeCd;
-
 	private Integer districtCd;
-
 	private Integer sdpoCd;
-
 	private Integer psCd;
 
 	private Long hotelCd;
@@ -45,10 +38,7 @@ public class HotelListRequestDTO {
 	@JsonFormat(pattern = "yyyy-MM-dd")
 	private LocalDate toDate;
 
-	@Builder.Default
-	private Integer pageNo = 0;
-
-	@Builder.Default
-	private Integer pageSize = 10;
+	private Integer pageNo;
+	private Integer pageSize;
 
 }
