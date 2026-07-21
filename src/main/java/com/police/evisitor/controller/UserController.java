@@ -54,17 +54,17 @@ public class UserController {
 		return ResponseEntity.ok(apiResponse);
 	}
 
-//	@PostMapping("updateUser")
-//	public ResponseEntity<ApiResponse<?>> updateUser(@RequestBody UserRequestDTO request){
-//		
-//		userService.updateUser(request);
-//		ApiResponse<?> apiResponse = ApiResponse.builder()
-//		        .status(HttpStatus.OK.toString())
-//		        .message("User Data Updated SuccessFully.")
-//		        .build();
-//
-//		return ResponseEntity.ok(apiResponse);
-//	}
+	@PostMapping("updateUser")
+	public ResponseEntity<ApiResponse<?>> updateUser(@RequestBody UserRequestDTO request){
+		
+		userService.updateUser(request);
+		ApiResponse<?> apiResponse = ApiResponse.builder()
+		        .status(HttpStatus.OK.toString())
+		        .message("User Data Updated SuccessFully.")
+		        .build();
+
+		return ResponseEntity.ok(apiResponse);
+	}
 
 	@PostMapping("/updateLoginStatus")
 	public ResponseEntity<ApiResponse<?>> updateLoginStatus(@RequestParam("userId") Long userId,

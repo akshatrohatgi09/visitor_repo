@@ -61,5 +61,6 @@ public interface UserListProjection {
 	String getUserAddress();
 	String getPincode();
 	String getComments();
+	Long getRoleId();
 	
 }
