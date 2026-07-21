@@ -318,8 +318,8 @@ public class UserServiceImpl implements UserService {
 		User userData = userRepo.findByUserId(userId)
 				.orElseThrow(() -> new NotFound("User Not Found With ID: " + userId));
 
-		Long hotelCd = userData.getHotelCd();
-		if (hotelCd > 0) {
+		if (userData.getHotelCd() != null && userData.getHotelCd() > 0) {
+			Long hotelCd = userData.getHotelCd();
 
 			Optional<Hotel> byHotelId = hotelRepo.findByHotelId(hotelCd);
 

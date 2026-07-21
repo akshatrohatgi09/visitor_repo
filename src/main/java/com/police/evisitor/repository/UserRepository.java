@@ -62,7 +62,7 @@ public interface UserRepository extends JpaRepository<User, Long> {
 			u.user_district_cd AS userDistrictCd,
 			u.user_address AS userAddress,
 			u.pincode AS pincode,
-			u.comments AS comments
+			u.comments AS comments,
 			u.user_role_id AS roleId
 
 			FROM t_users u
