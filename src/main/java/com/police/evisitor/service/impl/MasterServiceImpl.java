@@ -6,7 +6,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import com.police.evisitor.dto.request.DistrictDTO;
+import com.police.evisitor.dto.request.HotelTypeResponseDTO;
 import com.police.evisitor.dto.request.PoliceStationDTO;
+import com.police.evisitor.entity.HotelTypes;
 import com.police.evisitor.entity.MasterDocument;
 import com.police.evisitor.entity.Menu;
 import com.police.evisitor.entity.Range;
@@ -17,6 +19,7 @@ import com.police.evisitor.entity.StateRepository;
 import com.police.evisitor.entity.VisitReason;
 import com.police.evisitor.entity.Zone;
 import com.police.evisitor.repository.DistrictRepository;
+import com.police.evisitor.repository.HotelTypeRepository;
 import com.police.evisitor.repository.MasterDocumentRepository;
 import com.police.evisitor.repository.MenuRepository;
 import com.police.evisitor.repository.PoliceStationRepository;
@@ -61,6 +64,9 @@ public class MasterServiceImpl implements MasterService {
 
 	@Autowired
 	private MenuRepository menuRepository;
+
+	@Autowired
+	private HotelTypeRepository hotelTypeRepository;
 
 	@Override
 	public List<DistrictDTO> getDistricts(Integer stateCd) {
@@ -124,5 +130,14 @@ public class MasterServiceImpl implements MasterService {
 	public List<DistrictDTO> getAllDistricts() {
 		return districtRepository.findByRecordStatusNot("D").stream()
 				.map(d -> new DistrictDTO(d.getDistrictCd(), d.getDistrict())).toList();
+	}
+
+	@Override
+	public List<HotelTypeResponseDTO> getHotelTypes() {
+
+		List<HotelTypes> hotelTypes = hotelTypeRepository.findByRecordStatusOrderByHotelTypeNameAsc('C');
+
+		return hotelTypes.stream().map(type -> HotelTypeResponseDTO.builder().hotelTypeId(type.getHotelTypeId())
+				.hotelTypeName(type.getHotelTypeName()).build()).toList();
 	}
 }

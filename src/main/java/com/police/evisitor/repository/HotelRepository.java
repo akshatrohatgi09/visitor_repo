@@ -30,6 +30,10 @@ public interface HotelRepository extends JpaRepository<Hotel, Long> {
 
 	Optional<Hotel> findByHotelNameIgnoreCaseAndRecordStatusNot(String hotel, String string);
 
+	Hotel findByMobileNoAndRecordStatusNot(String mobileNo, Character recordStatus);
+
+	Hotel findByEmailIgnoreCaseAndRecordStatusNot(String email, Character recordStatus);
+
 	@Query(value = """
 			SELECT
 			h.hotel_id AS hotelId,
@@ -138,21 +142,12 @@ public interface HotelRepository extends JpaRepository<Hotel, Long> {
 					)
 
 					""", nativeQuery = true)
-	Page<HotelListProjection> listHotels(
-			@Param("stateCd") Integer stateCd,
-			@Param("zoneCd") Integer zoneCd,
-			@Param("rangeCd") Integer rangeCd,
-			@Param("districtCd") Integer districtCd,
-			@Param("sdpoCd") Integer sdpoCd,
-			@Param("psCd") Integer psCd,
-			@Param("hotelCd") Long hotelCd,
-			@Param("hotelName") String hotelName,
-			@Param("ownerName") String ownerName,
-			@Param("mobileNo") String mobileNo,
-			@Param("recordStatus") Character recordStatus,
-			@Param("fromDate") LocalDate fromDate,
-			@Param("toDate") LocalDate toDate,
-			Pageable pageable
+	Page<HotelListProjection> listHotels(@Param("stateCd") Integer stateCd, @Param("zoneCd") Integer zoneCd,
+			@Param("rangeCd") Integer rangeCd, @Param("districtCd") Integer districtCd, @Param("sdpoCd") Integer sdpoCd,
+			@Param("psCd") Integer psCd, @Param("hotelCd") Long hotelCd, @Param("hotelName") String hotelName,
+			@Param("ownerName") String ownerName, @Param("mobileNo") String mobileNo,
+			@Param("recordStatus") Character recordStatus, @Param("fromDate") LocalDate fromDate,
+			@Param("toDate") LocalDate toDate, Pageable pageable
 
 	);
 

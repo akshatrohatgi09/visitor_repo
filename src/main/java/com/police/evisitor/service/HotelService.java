@@ -23,4 +23,6 @@ public interface HotelService {
 
 	Page<HotelListProjection> listHotels(HotelListRequestDTO request);
 
+	void updateHotel(HotelRequestDTO request);
+
 }

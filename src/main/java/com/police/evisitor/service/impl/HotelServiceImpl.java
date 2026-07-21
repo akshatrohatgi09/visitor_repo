@@ -62,42 +62,94 @@ public class HotelServiceImpl implements HotelService {
 	@Transactional
 	@Override
 	public void createHotel(HotelRequestDTO req) {
-		try {
-			validateRequest(req);
-			validateMasterData(req);
-			isHotelAlreadyExist(req);
 
-			Hotel hotel = Hotel.builder().hotelName(req.getHotelName().trim()).ownerName(req.getOwnerName().trim())
+		try {
+
+			log.info("Create Hotel Request : {}", req);
+
+			validateRequest(req);
+
+			validateMasterData(req);
+
+			validateDuplicate(req, null);
+
+			Hotel hotel = Hotel.builder()
+
+					.hotelName(req.getHotelName().trim()).ownerName(req.getOwnerName().trim())
 					.mobileNo(req.getMobileNo().trim())
 					.email(req.getEmail() == null ? null : req.getEmail().trim().toLowerCase())
+
 					.stateCd(req.getStateCd()).zoneCd(req.getZoneCd()).rangeCd(req.getRangeCd())
 					.districtCd(req.getDistrictCd()).sdpoCd(req.getSdpoCd()).psCd(req.getPsCd())
-					.address(req.getAddress()).comment(req.getComment()).recordStatus("C").createdBy(req.getLoginUser())
+
+					.hotelTypeId(req.getHotelTypeId())
+
+					.noOfRooms(req.getNoOfRooms()).noOfFloors(req.getNoOfFloors())
+
+					.licenseNumber(req.getLicenseNumber()).licenseValidity(req.getLicenseValidity())
+
+					.address(req.getAddress()).pincode(req.getPincode())
+
+					.latitude(req.getLatitude()).longitude(req.getLongitude())
+
+					.beatNumber(req.getBeatNumber())
+
+					.ownerAddress(req.getOwnerAddress()).ownerStateCd(req.getOwnerStateCd())
+					.ownerDistrictCd(req.getOwnerDistrictCd()).ownerPincode(req.getOwnerPincode())
+
+					.managerName(req.getManagerName())
+					.managerEmail(req.getManagerEmail() == null ? null : req.getManagerEmail().trim().toLowerCase())
+					.managerPhone(req.getManagerPhone()).managerAddress(req.getManagerAddress())
+					.managerStateCd(req.getManagerStateCd()).managerDistrictCd(req.getManagerDistrictCd())
+					.managerPincode(req.getManagerPincode())
+
+					.comment(req.getComment())
+
+					.recordStatus('C')
+
+					.createdBy(req.getLoginUser())
+
 					.build();
 
 			hotelRepo.save(hotel);
+
 			log.info("Hotel Created Successfully : {}", hotel.getHotelName());
 
 		} catch (Exception e) {
-			log.error("Error while creating hotel : {}", req, e);
+
+			log.error("Error while creating Hotel : {}", req, e);
+
 			throw new RuntimeException(e.getMessage());
 
 		}
+
 	}
 
-	private void isHotelAlreadyExist(HotelRequestDTO req) {
+	private void validateDuplicate(HotelRequestDTO req, Long hotelId) {
 
-		Hotel hotel = hotelRepo.findByMobileNoAndRecordStatusNot(req.getMobileNo(), "D");
+		Hotel hotel = hotelRepo.findByMobileNoAndRecordStatusNot(req.getMobileNo(), 'D');
 
-		if (hotel != null)
-			throw new RuntimeException("Mobile Number already exists.");
+		if (hotel != null) {
+
+			if (hotelId == null || !hotel.getHotelId().equals(hotelId)) {
+
+				throw new RuntimeException("Mobile Number already exists.");
+
+			}
+		}
 
 		if (StringUtils.isNotBlank(req.getEmail())) {
 
-			hotel = hotelRepo.findByEmailIgnoreCaseAndRecordStatusNot(req.getEmail(), "D");
+			hotel = hotelRepo.findByEmailIgnoreCaseAndRecordStatusNot(req.getEmail(), 'D');
 
-			if (hotel != null)
-				throw new RuntimeException("Email already exists.");
+			if (hotel != null) {
+
+				if (hotelId == null || !hotel.getHotelId().equals(hotelId)) {
+
+					throw new RuntimeException("Email already exists.");
+
+				}
+			}
 		}
 	}
 
@@ -120,6 +172,21 @@ public class HotelServiceImpl implements HotelService {
 
 		policeStationRepository.findByPsCdAndRecordStatusNot(req.getPsCd(), "D")
 				.orElseThrow(() -> new RuntimeException("Invalid Police Station"));
+
+		stateRepository.findByStateCdAndRecordStatusNot(req.getOwnerStateCd(), "D")
+				.orElseThrow(() -> new RuntimeException("Invalid Owner State"));
+
+		districtRepository.findByDistrictCdAndRecordStatusNot(req.getOwnerDistrictCd(), "D")
+				.orElseThrow(() -> new RuntimeException("Invalid Owner District"));
+
+		stateRepository.findByStateCdAndRecordStatusNot(req.getManagerStateCd(), "D")
+				.orElseThrow(() -> new RuntimeException("Invalid Manager State"));
+
+		districtRepository.findByDistrictCdAndRecordStatusNot(req.getManagerDistrictCd(), "D")
+				.orElseThrow(() -> new RuntimeException("Invalid Manager District"));
+
+//		hotelTypeRepository.findByHotelTypeIdAndRecordStatusNot(req.getHotelTypeId(), "D")
+//				.orElseThrow(() -> new RuntimeException("Invalid Hotel Type"));
 
 	}
 
@@ -152,6 +219,39 @@ public class HotelServiceImpl implements HotelService {
 		if (req.getPsCd() == null)
 			throw new RuntimeException("Police Station is required.");
 
+		if (req.getHotelTypeId() == null)
+			throw new RuntimeException("Hotel Type is required.");
+
+		if (req.getNoOfRooms() == null)
+			throw new RuntimeException("Number of Rooms is required.");
+
+		if (req.getNoOfFloors() == null)
+			throw new RuntimeException("Number of Floors is required.");
+
+		if (StringUtils.isBlank(req.getLicenseNumber()))
+			throw new RuntimeException("License Number is required.");
+
+		if (req.getLicenseValidity() == null)
+			throw new RuntimeException("License Validity is required.");
+
+		if (StringUtils.isBlank(req.getAddress()))
+			throw new RuntimeException("Hotel Address is required.");
+
+		if (StringUtils.isBlank(req.getPincode()))
+			throw new RuntimeException("Pincode is required.");
+
+		if (req.getOwnerStateCd() == null)
+			throw new RuntimeException("Owner State is required.");
+
+		if (req.getOwnerDistrictCd() == null)
+			throw new RuntimeException("Owner District is required.");
+
+		if (StringUtils.isBlank(req.getManagerName()))
+			throw new RuntimeException("Manager Name is required.");
+
+		if (StringUtils.isBlank(req.getManagerPhone()))
+			throw new RuntimeException("Manager Phone is required.");
+
 	}
 
 	@Override
@@ -175,7 +275,7 @@ public class HotelServiceImpl implements HotelService {
 			// Soft Delete Hotel from DataBase
 			Hotel hotel = hotelRepo.findByHotelIdAndRecordStatusNot(hotelId, Constants.D)
 					.orElseThrow(() -> new NotFound("Hotel Not Found With ID: " + hotelId));
-			hotel.setRecordStatus(Constants.D);
+			hotel.setRecordStatus(Constants.c);
 			hotel.setUpdatedBy(request.getLoginUser());
 			hotelRepo.save(hotel);
 
@@ -208,12 +308,12 @@ public class HotelServiceImpl implements HotelService {
 			Hotel hotel = hotelRepo.findByHotelId(hotelId)
 					.orElseThrow(() -> new NotFound("Hotel Not Found With ID: " + hotelId));
 
-			if (hotel.getRecordStatus().equals(Constants.D) && operation.equals("Activate")) {
+			if (hotel.getRecordStatus().equals(Constants.d) && operation.equals("Activate")) {
 
-				hotel.setRecordStatus(Constants.C);
+				hotel.setRecordStatus(Constants.c);
 				response = "Hotel Activated Successfully.";
-			} else if (hotel.getRecordStatus().equals(Constants.C) && operation.equals("Deactivate")) {
-				hotel.setRecordStatus(Constants.D);
+			} else if (hotel.getRecordStatus().equals(Constants.c) && operation.equals("Deactivate")) {
+				hotel.setRecordStatus(Constants.c);
 				response = "Hotel Deactivated Successfully.";
 			} else {
 				throw new RuntimeException(operation + " operation is not suitable for the hotelId : " + hotelId);
@@ -324,6 +424,91 @@ public class HotelServiceImpl implements HotelService {
 		return hotelRepo.listHotels(stateCd, zoneCd, rangeCd, districtCd, sdpoCd, psCd, hotelCd, request.getHotelName(),
 				request.getOwnerName(), request.getMobileNo(), request.getRecordStatus(), request.getFromDate(),
 				request.getToDate(), pageable);
+
+	}
+
+	@Transactional
+	@Override
+	public void updateHotel(HotelRequestDTO req) {
+
+		try {
+
+			log.info("Update Hotel Request : {}", req);
+
+			if (req.getHotelId() == null) {
+				throw new RuntimeException("Hotel Id is required.");
+			}
+
+			Hotel hotel = hotelRepo.findById(req.getHotelId())
+					.orElseThrow(() -> new RuntimeException("Hotel not found with Id : " + req.getHotelId()));
+
+			validateRequest(req);
+
+			validateMasterData(req);
+
+			validateDuplicate(req, req.getHotelId());
+
+			hotel.setHotelName(req.getHotelName().trim());
+			hotel.setOwnerName(req.getOwnerName().trim());
+			hotel.setMobileNo(req.getMobileNo().trim());
+
+			hotel.setEmail(StringUtils.isBlank(req.getEmail()) ? null : req.getEmail().trim().toLowerCase());
+
+			hotel.setStateCd(req.getStateCd());
+			hotel.setZoneCd(req.getZoneCd());
+			hotel.setRangeCd(req.getRangeCd());
+			hotel.setDistrictCd(req.getDistrictCd());
+			hotel.setSdpoCd(req.getSdpoCd());
+			hotel.setPsCd(req.getPsCd());
+
+			hotel.setHotelTypeId(req.getHotelTypeId());
+
+			hotel.setNoOfRooms(req.getNoOfRooms());
+			hotel.setNoOfFloors(req.getNoOfFloors());
+
+			hotel.setLicenseNumber(req.getLicenseNumber());
+			hotel.setLicenseValidity(req.getLicenseValidity());
+
+			hotel.setAddress(req.getAddress());
+			hotel.setPincode(req.getPincode());
+
+			hotel.setLatitude(req.getLatitude());
+			hotel.setLongitude(req.getLongitude());
+
+			hotel.setBeatNumber(req.getBeatNumber());
+
+			hotel.setOwnerAddress(req.getOwnerAddress());
+			hotel.setOwnerStateCd(req.getOwnerStateCd());
+			hotel.setOwnerDistrictCd(req.getOwnerDistrictCd());
+			hotel.setOwnerPincode(req.getOwnerPincode());
+
+			hotel.setManagerName(req.getManagerName());
+
+			hotel.setManagerEmail(
+					StringUtils.isBlank(req.getManagerEmail()) ? null : req.getManagerEmail().trim().toLowerCase());
+
+			hotel.setManagerPhone(req.getManagerPhone());
+			hotel.setManagerAddress(req.getManagerAddress());
+
+			hotel.setManagerStateCd(req.getManagerStateCd());
+			hotel.setManagerDistrictCd(req.getManagerDistrictCd());
+			hotel.setManagerPincode(req.getManagerPincode());
+
+			hotel.setComment(req.getComment());
+
+			hotel.setUpdatedBy(req.getLoginUser());
+
+			hotelRepo.save(hotel);
+
+			log.info("Hotel Updated Successfully : {}", hotel.getHotelName());
+
+		} catch (Exception e) {
+
+			log.error("Error while updating Hotel : {}", req, e);
+
+			throw new RuntimeException(e.getMessage());
+
+		}
 
 	}
 

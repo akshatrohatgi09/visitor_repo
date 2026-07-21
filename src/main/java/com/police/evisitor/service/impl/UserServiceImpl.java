@@ -326,12 +326,11 @@ public class UserServiceImpl implements UserService {
 
 			Hotel hotelData = byHotelId.orElseThrow(() -> new NotFound("Hotel Not Found : " + hotelCd));
 
-			if (Constants.D.equalsIgnoreCase(hotelData.getRecordStatus())) {
+			if (Constants.d == (hotelData.getRecordStatus())) {
 				throw new NotFound("Associated Hotel is Inactive for hotelId : " + hotelCd);
 			}
 		}
 
-		// if (roleId != 5L) {
 		if (userData.getRecordStatus() == Constants.d && operation.equals("Activate")) {
 			isUserAlreadyExist(userData);
 
@@ -348,9 +347,6 @@ public class UserServiceImpl implements UserService {
 
 		userData.setUpdatedBy(userRequest.getLoginId());
 		userData.setComment(userRequest.getComment());
-//		} else {
-//			throw new RuntimeException("Action is not allowed for the roleId : " + roleId);
-//		}
 
 		return response;
 	}
@@ -771,31 +767,25 @@ public class UserServiceImpl implements UserService {
 		Long hotelCd = request.getHotelCd();
 		Long roleId = request.getRoleId();
 
-		/*
-		 * Apply Role Hierarchy
-		 */
 		switch (loginUser.getUserRoleId().intValue()) {
 
 		case 1:
-			// Admin
+			// Admin - no restriction
 			break;
 
 		case 2:
 			stateCd = loginUser.getStateCd();
-			roleId = 2L;
 			break;
 
 		case 3:
 			stateCd = loginUser.getStateCd();
 			zoneCd = loginUser.getZoneCd();
-			roleId = 3L;
 			break;
 
 		case 4:
 			stateCd = loginUser.getStateCd();
 			zoneCd = loginUser.getZoneCd();
 			rangeCd = loginUser.getRangeCd();
-			roleId = 4L;
 			break;
 
 		case 5:
@@ -803,7 +793,6 @@ public class UserServiceImpl implements UserService {
 			zoneCd = loginUser.getZoneCd();
 			rangeCd = loginUser.getRangeCd();
 			districtCd = loginUser.getDistrictCd();
-			roleId = 5L;
 			break;
 
 		case 6:
@@ -812,7 +801,6 @@ public class UserServiceImpl implements UserService {
 			rangeCd = loginUser.getRangeCd();
 			districtCd = loginUser.getDistrictCd();
 			sdpoCd = loginUser.getSdpoCd();
-			roleId = 6L;
 			break;
 
 		case 7:
@@ -822,7 +810,6 @@ public class UserServiceImpl implements UserService {
 			districtCd = loginUser.getDistrictCd();
 			sdpoCd = loginUser.getSdpoCd();
 			psCd = loginUser.getPsCd();
-			roleId = 7L;
 			break;
 
 		case 8:
@@ -833,12 +820,10 @@ public class UserServiceImpl implements UserService {
 			sdpoCd = loginUser.getSdpoCd();
 			psCd = loginUser.getPsCd();
 			hotelCd = loginUser.getHotelCd();
-			roleId = 8L;
 			break;
 
 		case 9:
 			hotelCd = loginUser.getHotelCd();
-			roleId = 9L;
 			break;
 
 		default:
@@ -850,6 +835,5 @@ public class UserServiceImpl implements UserService {
 		return userRepo.getUsers(stateCd, zoneCd, rangeCd, districtCd, sdpoCd, psCd, hotelCd, roleId, request.getName(),
 				request.getUserLogin(), request.getMobile(), request.getRecordStatus(), request.getFromDate(),
 				request.getToDate(), pageable);
-
 	}
 }

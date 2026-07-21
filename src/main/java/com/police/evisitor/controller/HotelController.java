@@ -31,8 +31,26 @@ public class HotelController {
 
 		hotelService.createHotel(request);
 
-		return ResponseEntity.ok(ApiResponse.builder().status(HttpStatus.CREATED.toString())
-				.message("Hotel Created Successfully").build());
+		return ResponseEntity.ok(ApiResponse.builder().status("SUCCESS").message("Hotel Created Successfully").build());
+	}
+	
+	@PostMapping("/listHotels")
+	public ResponseEntity<ApiResponse<?>> listHotels(@RequestBody HotelListRequestDTO request) {
+
+		return ResponseEntity.ok(ApiResponse.builder().status("SUCCESS").message("Hotels fetched successfully.")
+				.data(hotelService.listHotels(request)).build());
+
+	}
+	
+	@PostMapping("/updateHotel")
+	public ResponseEntity<ApiResponse<?>> updateHotel(@RequestBody HotelRequestDTO request) {
+
+	    hotelService.updateHotel(request);
+
+	    return ResponseEntity.ok(ApiResponse.builder()
+	            .status("SUCCESS")
+	            .message("Hotel Updated Successfully")
+	            .build());
 	}
 
 	@GetMapping("/listHotel")
@@ -64,14 +82,6 @@ public class HotelController {
 				.message("Success").data(result).build();
 
 		return ResponseEntity.ok(apiResponse);
-	}
-
-	@PostMapping("/listHotels")
-	public ResponseEntity<ApiResponse<?>> listHotels(@RequestBody HotelListRequestDTO request) {
-
-		return ResponseEntity.ok(ApiResponse.builder().status("SUCCESS").message("Hotels fetched successfully.")
-				.data(hotelService.listHotels(request)).build());
-
 	}
 
 }

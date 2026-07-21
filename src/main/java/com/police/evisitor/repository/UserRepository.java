@@ -33,162 +33,179 @@ public interface UserRepository extends JpaRepository<User, Long> {
 
 			u.user_id AS userId,
 			u.user_role_id AS roleId,
+			r.role_name AS roleName,
+
 			u.first_name AS firstName,
 			u.last_name AS lastName,
+
 			u.user_login AS userLogin,
 			u.user_mob AS userMob,
 			u.user_email AS userEmail,
-			r.role_name AS roleName,
+
 			u.state_cd AS stateCd,
 			st.state_name AS stateName,
+
 			u.zone_cd AS zoneCd,
 			z.zone_name AS zoneName,
+
 			u.range_cd AS rangeCd,
 			rg.range_name AS rangeName,
+
 			u.district_cd AS districtCd,
 			d.district AS districtName,
+
 			u.sdpo_cd AS sdpoCd,
 			sd.sdpo_name AS sdpoName,
+
 			u.ps_cd AS psCd,
 			ps.ps AS policeStationName,
+
 			u.hotel_cd AS hotelCd,
 			h.hotel_name AS hotelName,
-			u.record_status AS recordStatus,
-			u.login_status AS loginStatus,
-			u.created_by AS createdBy,
-			u.created_on AS createdOn,
+
 			u.user_state_cd AS userStateCd,
-			ustd.state_name as userStateName,
-			udist.district as userDistrictName,
+			ust.state_name AS userStateName,
+
 			u.user_district_cd AS userDistrictCd,
+			ud.district AS userDistrictName,
+
 			u.user_address AS userAddress,
 			u.pincode AS pincode,
-			u.comments AS comments
+			u.comments AS comments,
+
+			u.record_status AS recordStatus,
+			u.login_status AS loginStatus,
+
+			u.created_by AS createdBy,
+			u.created_on AS createdOn
 
 			FROM t_users u
-			JOIN m_roles r
-			ON r.role_id=u.user_role_id
-			
+
+			INNER JOIN m_roles r
+			    ON r.role_id = u.user_role_id
+
 			LEFT JOIN m_state st
-			ON st.state_cd=u.state_cd
+			    ON st.state_cd = u.state_cd
 
 			LEFT JOIN m_zone z
-			ON z.zone_cd=u.zone_cd
+			    ON z.zone_cd = u.zone_cd
 
 			LEFT JOIN m_range rg
-			ON rg.range_cd=u.range_cd
+			    ON rg.range_cd = u.range_cd
 
 			LEFT JOIN m_district d
-			ON d.district_cd=u.district_cd
+			    ON d.district_cd = u.district_cd
 
 			LEFT JOIN m_sdpo sd
-			ON sd.sdpo_cd=u.sdpo_cd
+			    ON sd.sdpo_cd = u.sdpo_cd
 
 			LEFT JOIN m_police_station ps
-			ON ps.ps_cd=u.ps_cd
+			    ON ps.ps_cd = u.ps_cd
 
 			LEFT JOIN t_hotels h
-			ON h.hotel_id=u.hotel_cd
-			
-			LEFT JOIN m_state ustd
-			ON ustd.state_cd=u.user_state_cd
-			
-			LEFT JOIN m_district udist
-			ON udist.district_cd=u.user_district_cd
+			    ON h.hotel_id = u.hotel_cd
 
-			WHERE u.record_status<>'D'
+			LEFT JOIN m_state ust
+			    ON ust.state_cd = u.user_state_cd
 
-			AND (:stateCd IS NULL OR u.state_cd=:stateCd)
-			AND (:zoneCd IS NULL OR u.zone_cd=:zoneCd)
-			AND (:rangeCd IS NULL OR u.range_cd=:rangeCd)
-			AND (:districtCd IS NULL OR u.district_cd=:districtCd)
-			AND (:sdpoCd IS NULL OR u.sdpo_cd=:sdpoCd)
-			AND (:psCd IS NULL OR u.ps_cd=:psCd)
-			AND (:hotelCd IS NULL OR u.hotel_cd=:hotelCd)
+			LEFT JOIN m_district ud
+			    ON ud.district_cd = u.user_district_cd
+
+			WHERE u.record_status <> 'D'
+
+			AND (:stateCd IS NULL OR u.state_cd = :stateCd)
+			AND (:zoneCd IS NULL OR u.zone_cd = :zoneCd)
+			AND (:rangeCd IS NULL OR u.range_cd = :rangeCd)
+			AND (:districtCd IS NULL OR u.district_cd = :districtCd)
+			AND (:sdpoCd IS NULL OR u.sdpo_cd = :sdpoCd)
+			AND (:psCd IS NULL OR u.ps_cd = :psCd)
+			AND (:hotelCd IS NULL OR u.hotel_cd = :hotelCd)
 
 			AND (
-			:roleId IS NULL
-			OR u.user_role_id>:roleId
+			    :roleId IS NULL
+			    OR u.user_role_id = :roleId
 			)
 
 			AND (
-			:recordStatus IS NULL
-			OR u.record_status=:recordStatus
+			    :recordStatus IS NULL
+			    OR u.record_status = :recordStatus
 			)
 
 			AND (
-			:name IS NULL
-			OR LOWER(CONCAT(u.first_name,' ',u.last_name))
-			LIKE LOWER(CONCAT('%',:name,'%'))
+			    COALESCE(:name,'') = ''
+			    OR LOWER(CONCAT(COALESCE(u.first_name,''),' ',COALESCE(u.last_name,'')))
+			       LIKE LOWER(CONCAT('%',:name,'%'))
 			)
 
 			AND (
-			:userLogin IS NULL
-			OR LOWER(u.user_login)
-			LIKE LOWER(CONCAT('%',:userLogin,'%'))
+			    COALESCE(:userLogin,'') = ''
+			    OR LOWER(u.user_login)
+			       LIKE LOWER(CONCAT('%',:userLogin,'%'))
 			)
 
 			AND (
-			:mobile IS NULL
-			OR u.user_mob
-			LIKE CONCAT('%',:mobile,'%')
+			    COALESCE(:mobile,'') = ''
+			    OR u.user_mob LIKE CONCAT('%',:mobile,'%')
 			)
 
 			AND (
-			(:fromDate IS NULL OR :toDate IS NULL)
-			OR DATE(u.created_on)
-			BETWEEN :fromDate AND :toDate
+			    (:fromDate IS NULL OR :toDate IS NULL)
+			    OR DATE(u.created_on) BETWEEN :fromDate AND :toDate
 			)
 
 			ORDER BY u.created_on DESC
 
 			""",
+
 			countQuery = """
+
 					SELECT COUNT(*)
+
 					FROM t_users u
-					WHERE u.record_status<>'D'
-					AND (:stateCd IS NULL OR u.state_cd=:stateCd)
-					AND (:zoneCd IS NULL OR u.zone_cd=:zoneCd)
-					AND (:rangeCd IS NULL OR u.range_cd=:rangeCd)
-					AND (:districtCd IS NULL OR u.district_cd=:districtCd)
-					AND (:sdpoCd IS NULL OR u.sdpo_cd=:sdpoCd)
-					AND (:psCd IS NULL OR u.ps_cd=:psCd)
-					AND (:hotelCd IS NULL OR u.hotel_cd=:hotelCd)
+
+					WHERE u.record_status <> 'D'
+
+					AND (:stateCd IS NULL OR u.state_cd = :stateCd)
+					AND (:zoneCd IS NULL OR u.zone_cd = :zoneCd)
+					AND (:rangeCd IS NULL OR u.range_cd = :rangeCd)
+					AND (:districtCd IS NULL OR u.district_cd = :districtCd)
+					AND (:sdpoCd IS NULL OR u.sdpo_cd = :sdpoCd)
+					AND (:psCd IS NULL OR u.ps_cd = :psCd)
+					AND (:hotelCd IS NULL OR u.hotel_cd = :hotelCd)
+
 					AND (
-					:roleId IS NULL
-					OR u.user_role_id>:roleId
+					    :roleId IS NULL
+					    OR u.user_role_id = :roleId
 					)
 
 					AND (
-					:recordStatus IS NULL
-					OR u.record_status=:recordStatus
+					    :recordStatus IS NULL
+					    OR u.record_status = :recordStatus
 					)
 
 					AND (
-					:name IS NULL
-					OR LOWER(CONCAT(u.first_name,' ',u.last_name))
-					LIKE LOWER(CONCAT('%',:name,'%'))
+					    COALESCE(:name,'') = ''
+					    OR LOWER(CONCAT(COALESCE(u.first_name,''),' ',COALESCE(u.last_name,'')))
+					       LIKE LOWER(CONCAT('%',:name,'%'))
 					)
 
 					AND (
-					:userLogin IS NULL
-					OR LOWER(u.user_login)
-					LIKE LOWER(CONCAT('%',:userLogin,'%'))
+					    COALESCE(:userLogin,'') = ''
+					    OR LOWER(u.user_login)
+					       LIKE LOWER(CONCAT('%',:userLogin,'%'))
 					)
 
 					AND (
-					:mobile IS NULL
-					OR u.user_mob
-					LIKE CONCAT('%',:mobile,'%')
+					    COALESCE(:mobile,'') = ''
+					    OR u.user_mob LIKE CONCAT('%',:mobile,'%')
 					)
 
 					AND (
-					(:fromDate IS NULL OR :toDate IS NULL)
-					OR DATE(u.created_on)
-					BETWEEN :fromDate AND :toDate
+					    (:fromDate IS NULL OR :toDate IS NULL)
+					    OR DATE(u.created_on) BETWEEN :fromDate AND :toDate
 					)
-					""",
-			nativeQuery = true)
+
+					""", nativeQuery = true)
 
 	Page<UserListProjection> getUsers(Integer stateCd, Integer zoneCd, Integer rangeCd, Integer districtCd,
 			Integer sdpoCd, Integer psCd, Long hotelCd, Long roleId, String name, String userLogin, String mobile,

@@ -5,8 +5,10 @@ import java.time.LocalDateTime;
 public interface UserListProjection {
 
 	Long getUserId();
-	
+
 	Long getRoleId();
+
+	String getRoleName();
 
 	String getFirstName();
 
@@ -17,8 +19,6 @@ public interface UserListProjection {
 	String getUserMob();
 
 	String getUserEmail();
-
-	String getRoleName();
 
 	Integer getStateCd();
 
@@ -48,6 +48,20 @@ public interface UserListProjection {
 
 	String getHotelName();
 
+	Integer getUserStateCd();
+
+	String getUserStateName();
+
+	Integer getUserDistrictCd();
+
+	String getUserDistrictName();
+
+	String getUserAddress();
+
+	String getPincode();
+
+	String getComments();
+
 	Character getRecordStatus();
 
 	Boolean getLoginStatus();
@@ -55,13 +69,5 @@ public interface UserListProjection {
 	String getCreatedBy();
 
 	LocalDateTime getCreatedOn();
-	
-	Integer getUserStateCd();
-	String getUserStateName();
-	Integer getUserDistrictCd();
-	String getUserDistrictName();
-	String getUserAddress();
-	String getPincode();
-	String getComments();
-	
+
 }

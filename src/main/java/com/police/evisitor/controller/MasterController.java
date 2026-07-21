@@ -10,6 +10,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.police.evisitor.dto.request.HotelTypeResponseDTO;
 import com.police.evisitor.dto.response.ApiResponse;
 import com.police.evisitor.entity.Menu;
 import com.police.evisitor.entity.Role;
@@ -85,11 +86,20 @@ public class MasterController {
 				.status(String.valueOf(HttpStatus.OK)).data(menuList).build();
 		return ResponseEntity.ok(apiResponse);
 	}
-	
+
 	@GetMapping("/allDistricts")
 	public ResponseEntity<?> getAllDistricts() {
 
 		return ResponseEntity.ok(masterService.getAllDistricts());
+	}
+
+	@GetMapping("/hotelTypeList")
+	public ResponseEntity<ApiResponse<List<HotelTypeResponseDTO>>> getHotelTypeList() {
+
+		List<HotelTypeResponseDTO> response = masterService.getHotelTypes();
+
+		return ResponseEntity.ok(ApiResponse.<List<HotelTypeResponseDTO>>builder().status("SUCCESS")
+				.message("Hotel Type List Fetched Successfully").data(response).build());
 	}
 
 }
