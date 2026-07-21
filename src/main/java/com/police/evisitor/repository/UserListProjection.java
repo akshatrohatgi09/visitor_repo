@@ -5,6 +5,8 @@ import java.time.LocalDateTime;
 public interface UserListProjection {
 
 	Long getUserId();
+	
+	Long getRoleId();
 
 	String getFirstName();
 
@@ -61,6 +63,5 @@ public interface UserListProjection {
 	String getUserAddress();
 	String getPincode();
 	String getComments();
-	Long getRoleId();
 	
 }

@@ -312,7 +312,7 @@ public class UserServiceImpl implements UserService {
 
 		Long userId = userRequest.getUserId();
 		String operation = userRequest.getOperation();
-		Long roleId = userRequest.getRole();
+		Long roleId = userRequest.getRoleId();
 		String response = "";
 
 		User userData = userRepo.findByUserId(userId)
@@ -330,26 +330,26 @@ public class UserServiceImpl implements UserService {
 			}
 		}
 
-		if (roleId != 5L) {
-			if (userData.getRecordStatus() == Constants.d && operation.equals("Activate")) {
-				isUserAlreadyExist(userData);
+		// if (roleId != 5L) {
+		if (userData.getRecordStatus() == Constants.d && operation.equals("Activate")) {
+			isUserAlreadyExist(userData);
 
-				userData.setRecordStatus(Constants.c);
-				response = "User Activated Successfully.";
-			} else if (userData.getRecordStatus() == Constants.c && operation.equals("Deactivate")) {
+			userData.setRecordStatus(Constants.c);
+			response = "User Activated Successfully.";
+		} else if (userData.getRecordStatus() == Constants.c && operation.equals("Deactivate")) {
 
-				userData.setRecordStatus(Constants.d);
-				response = "User Deactivated Successfully.";
+			userData.setRecordStatus(Constants.d);
+			response = "User Deactivated Successfully.";
 
-			} else {
-				throw new RuntimeException(operation + " operation is not suitable for the userId : " + userId);
-			}
-
-			userData.setUpdatedBy(userRequest.getLoginId());
-			userData.setComment(userRequest.getComment());
 		} else {
-			throw new RuntimeException("Action is not allowed for the roleId : " + roleId);
+			throw new RuntimeException(operation + " operation is not suitable for the userId : " + userId);
 		}
+
+		userData.setUpdatedBy(userRequest.getLoginId());
+		userData.setComment(userRequest.getComment());
+//		} else {
+//			throw new RuntimeException("Action is not allowed for the roleId : " + roleId);
+//		}
 
 		return response;
 	}

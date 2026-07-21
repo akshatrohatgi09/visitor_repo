@@ -32,6 +32,7 @@ public interface UserRepository extends JpaRepository<User, Long> {
 			SELECT
 
 			u.user_id AS userId,
+			u.user_role_id AS roleId,
 			u.first_name AS firstName,
 			u.last_name AS lastName,
 			u.user_login AS userLogin,
@@ -62,8 +63,7 @@ public interface UserRepository extends JpaRepository<User, Long> {
 			u.user_district_cd AS userDistrictCd,
 			u.user_address AS userAddress,
 			u.pincode AS pincode,
-			u.comments AS comments,
-			u.user_role_id AS roleId
+			u.comments AS comments
 
 			FROM t_users u
 			JOIN m_roles r
