@@ -54,16 +54,12 @@ public class UserController {
 		return ResponseEntity.ok(apiResponse);
 	}
 
-	@PostMapping("updateUser")
-	public ResponseEntity<ApiResponse<?>> updateUser(@RequestBody UserRequestDTO request){
-		
-		userService.updateUser(request);
-		ApiResponse<?> apiResponse = ApiResponse.builder()
-		        .status(HttpStatus.OK.toString())
-		        .message("User Data Updated SuccessFully.")
-		        .build();
+	@PostMapping("/updateUser")
+	public ResponseEntity<ApiResponse<?>> updateUser(@RequestBody UserRequestDTO request) {
 
-		return ResponseEntity.ok(apiResponse);
+		userService.updateUser(request);
+
+		return ResponseEntity.ok(ApiResponse.builder().status("SUCCESS").message("User Updated Successfully").build());
 	}
 
 	@PostMapping("/updateLoginStatus")

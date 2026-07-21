@@ -1,6 +1,7 @@
 package com.police.evisitor.service.impl;
 
 import java.math.BigDecimal;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -354,8 +355,80 @@ public class UserServiceImpl implements UserService {
 		return response;
 	}
 
+	@Transactional
 	@Override
-	public void updateUser(UserRequestDTO userRequest) {
+	public void updateUser(UserRequestDTO reqDto) {
+
+		try {
+
+			log.info("Update User Request : {}", reqDto);
+
+			if (reqDto.getUserId() == null) {
+				throw new RuntimeException("User Id is required.");
+			}
+
+			User user = userRepo.findById(reqDto.getUserId())
+					.orElseThrow(() -> new RuntimeException("User Not Found : " + reqDto.getUserId()));
+
+			Role role = roleRepository.findById(reqDto.getRoleId())
+					.orElseThrow(() -> new RuntimeException("Role Not Found : " + reqDto.getRoleId()));
+
+			validateRoleHierarchy(role.getRoleId(), reqDto);
+
+			validateMasterData(reqDto);
+
+			validateDuplicateForUpdate(reqDto);
+
+			modelMapper.map(reqDto, user);
+
+			user.setUserRoleId(reqDto.getRoleId());
+
+			user.setUserLogin(reqDto.getUserLogin().trim().toLowerCase());
+
+			user.setHotelCd(reqDto.getHotelId());
+
+			user.setUpdatedBy(reqDto.getLoginId());
+
+			user.setUpdatedOn(LocalDateTime.now());
+
+			userRepo.save(user);
+
+			log.info("User Updated Successfully : {}", user.getUserLogin());
+
+		} catch (Exception e) {
+
+			log.error("Error while updating user.", e);
+
+			throw new RuntimeException(e.getMessage());
+
+		}
+	}
+
+	private void validateDuplicateForUpdate(UserRequestDTO dto) {
+
+		User login = userRepo.findByUserLoginIgnoreCaseAndRecordStatusNot(dto.getUserLogin(), 'D');
+
+		if (login != null && !login.getUserId().equals(dto.getUserId())) {
+
+			throw new RuntimeException("User Login Already Exists : " + dto.getUserLogin());
+
+		}
+
+		User email = userRepo.findByUserEmailIgnoreCaseAndRecordStatusNot(dto.getUserEmail(), 'D');
+
+		if (email != null && !email.getUserId().equals(dto.getUserId())) {
+
+			throw new RuntimeException("Email Already Exists : " + dto.getUserEmail());
+
+		}
+
+		User mobile = userRepo.findByUserMobAndRecordStatusNot(dto.getUserMob(), 'D');
+
+		if (mobile != null && !mobile.getUserId().equals(dto.getUserId())) {
+
+			throw new RuntimeException("Mobile Already Exists : " + dto.getUserMob());
+
+		}
 
 	}
 
