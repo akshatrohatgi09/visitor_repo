@@ -8,7 +8,6 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
-import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
 import com.police.evisitor.entity.Hotel;
@@ -30,14 +29,9 @@ public interface HotelRepository extends JpaRepository<Hotel, Long> {
 
 	Optional<Hotel> findByHotelNameIgnoreCaseAndRecordStatusNot(String hotel, String recordStatus);
 
-//	Hotel findByMobileNoAndRecordStatusNot(String mobileNo, String recordStatus);
-//
-//	Hotel findByEmailIgnoreCaseAndRecordStatusNot(String email, String recordStatus);
-
 	@Query(value = """
 
 			SELECT
-
 			h.hotel_id AS hotelId,
 			h.hotel_name AS hotelName,
 			h.owner_name AS ownerName,
@@ -87,9 +81,7 @@ public interface HotelRepository extends JpaRepository<Hotel, Long> {
 			LEFT JOIN m_police_station ps
 			ON ps.ps_cd = h.ps_cd
 
-			WHERE h.record_status <> 'D'
-
-			AND (:stateCd IS NULL OR h.state_cd = :stateCd)
+			WHERE (:stateCd IS NULL OR h.state_cd = :stateCd)
 			AND (:zoneCd IS NULL OR h.zone_cd = :zoneCd)
 			AND (:rangeCd IS NULL OR h.range_cd = :rangeCd)
 			AND (:districtCd IS NULL OR h.district_cd = :districtCd)
@@ -129,9 +121,7 @@ public interface HotelRepository extends JpaRepository<Hotel, Long> {
 
 					FROM t_hotels h
 
-					WHERE h.record_status <> 'D'
-
-					AND (:stateCd IS NULL OR h.state_cd = :stateCd)
+					WHERE (:stateCd IS NULL OR h.state_cd = :stateCd)
 					AND (:zoneCd IS NULL OR h.zone_cd = :zoneCd)
 					AND (:rangeCd IS NULL OR h.range_cd = :rangeCd)
 					AND (:districtCd IS NULL OR h.district_cd = :districtCd)
@@ -162,10 +152,8 @@ public interface HotelRepository extends JpaRepository<Hotel, Long> {
 					)
 
 					""", nativeQuery = true)
-	Page<HotelListProjection> listHotels(@Param("stateCd") Integer stateCd, @Param("zoneCd") Integer zoneCd,
-			@Param("rangeCd") Integer rangeCd, @Param("districtCd") Integer districtCd, @Param("sdpoCd") Integer sdpoCd,
-			@Param("psCd") Integer psCd, @Param("hotelCd") Long hotelCd, @Param("hotelName") String hotelName,
-			@Param("ownerName") String ownerName, @Param("mobileNo") String mobileNo,
-			@Param("fromDate") LocalDate fromDate, @Param("toDate") LocalDate toDate, Pageable pageable);
+	Page<HotelListProjection> listHotels(Integer stateCd, Integer zoneCd, Integer rangeCd, Integer districtCd,
+			Integer sdpoCd, Integer psCd, Long hotelCd, String hotelName, String ownerName, String mobileNo,
+			LocalDate fromDate, LocalDate toDate, Pageable pageable);
 
 }

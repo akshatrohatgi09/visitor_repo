@@ -40,7 +40,7 @@ public interface HotelListProjection {
 
 	String getPoliceStationName();
 
-	Character getRecordStatus();
+	String getRecordStatus();
 
 	String getCreatedBy();
 

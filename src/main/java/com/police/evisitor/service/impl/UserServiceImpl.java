@@ -833,7 +833,7 @@ public class UserServiceImpl implements UserService {
 		Pageable pageable = PageRequest.of(request.getPageNo(), request.getPageSize());
 
 		return userRepo.getUsers(stateCd, zoneCd, rangeCd, districtCd, sdpoCd, psCd, hotelCd, roleId, request.getName(),
-				request.getUserLogin(), request.getMobile(), request.getRecordStatus(), request.getFromDate(),
+				request.getUserLogin(), request.getMobile(), request.getFromDate(),
 				request.getToDate(), pageable);
 	}
 }

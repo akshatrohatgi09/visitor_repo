@@ -21,16 +21,14 @@ public interface UserRepository extends JpaRepository<User, Long> {
 
 	User findByUserMobAndRecordStatusNot(String userMob, Character recordStatus);
 
-	List<User> findByHotelCdAndRecordStatusNot(Long hotelCd, char recordStatus);
+	List<User> findByHotelCdAndRecordStatusNot(Long hotelCd, Character recordStatus);
 
-	Optional<User> findByUserIdAndRecordStatusNot(Long userId, char recordStatus);
+	Optional<User> findByUserIdAndRecordStatusNot(Long userId, Character recordStatus);
 
 	Optional<User> findByUserId(Long userId);
 
 	@Query(value = """
-
 			SELECT
-
 			u.user_id AS userId,
 			u.user_role_id AS roleId,
 			r.role_name AS roleName,
@@ -111,9 +109,7 @@ public interface UserRepository extends JpaRepository<User, Long> {
 			LEFT JOIN m_district ud
 			    ON ud.district_cd = u.user_district_cd
 
-			WHERE u.record_status <> 'D'
-
-			AND (:stateCd IS NULL OR u.state_cd = :stateCd)
+			WHERE (:stateCd IS NULL OR u.state_cd = :stateCd)
 			AND (:zoneCd IS NULL OR u.zone_cd = :zoneCd)
 			AND (:rangeCd IS NULL OR u.range_cd = :rangeCd)
 			AND (:districtCd IS NULL OR u.district_cd = :districtCd)
@@ -124,11 +120,6 @@ public interface UserRepository extends JpaRepository<User, Long> {
 			AND (
 			    :roleId IS NULL
 			    OR u.user_role_id = :roleId
-			)
-
-			AND (
-			    :recordStatus IS NULL
-			    OR u.record_status = :recordStatus
 			)
 
 			AND (
@@ -163,9 +154,7 @@ public interface UserRepository extends JpaRepository<User, Long> {
 
 					FROM t_users u
 
-					WHERE u.record_status <> 'D'
-
-					AND (:stateCd IS NULL OR u.state_cd = :stateCd)
+					WHERE String(:stateCd IS NULL OR u.state_cd = :stateCd)
 					AND (:zoneCd IS NULL OR u.zone_cd = :zoneCd)
 					AND (:rangeCd IS NULL OR u.range_cd = :rangeCd)
 					AND (:districtCd IS NULL OR u.district_cd = :districtCd)
@@ -176,11 +165,6 @@ public interface UserRepository extends JpaRepository<User, Long> {
 					AND (
 					    :roleId IS NULL
 					    OR u.user_role_id = :roleId
-					)
-
-					AND (
-					    :recordStatus IS NULL
-					    OR u.record_status = :recordStatus
 					)
 
 					AND (
@@ -209,7 +193,7 @@ public interface UserRepository extends JpaRepository<User, Long> {
 
 	Page<UserListProjection> getUsers(Integer stateCd, Integer zoneCd, Integer rangeCd, Integer districtCd,
 			Integer sdpoCd, Integer psCd, Long hotelCd, Long roleId, String name, String userLogin, String mobile,
-			Character recordStatus, LocalDate fromDate, LocalDate toDate, Pageable pageable
+			LocalDate fromDate, LocalDate toDate, Pageable pageable
 
 	);
 
