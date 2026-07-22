@@ -12,6 +12,7 @@ public class VisitorRequestDTO {
 	private Long user;
 	private Long hotel;
 	private List<Long> docIds;
+	private List<Long> photoIds;
 	private Long visitorRef;
 	private String roomNo;
 	private LocalDateTime checkInDate;

@@ -300,6 +300,7 @@ public class HotelServiceImpl implements HotelService {
 		return "Hotel Deleted Successfully.";
 	}
 
+	@Transactional
 	@Override
 	public String activeInactiveHotel(HotelRequestDTO request) {
 		Long hotelId = request.getHotelId();
