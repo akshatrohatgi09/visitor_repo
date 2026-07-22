@@ -28,11 +28,11 @@ public interface HotelRepository extends JpaRepository<Hotel, Long> {
 
 	Hotel findByEmailIgnoreCaseAndRecordStatusNot(String email, String recordStatus);
 
-	Optional<Hotel> findByHotelNameIgnoreCaseAndRecordStatusNot(String hotel, String string);
+	Optional<Hotel> findByHotelNameIgnoreCaseAndRecordStatusNot(String hotel, String recordStatus);
 
-	Hotel findByMobileNoAndRecordStatusNot(String mobileNo, Character recordStatus);
-
-	Hotel findByEmailIgnoreCaseAndRecordStatusNot(String email, Character recordStatus);
+//	Hotel findByMobileNoAndRecordStatusNot(String mobileNo, String recordStatus);
+//
+//	Hotel findByEmailIgnoreCaseAndRecordStatusNot(String email, String recordStatus);
 
 	@Query(value = """
 

@@ -33,7 +33,7 @@ public class HotelRequestDTO {
 	private Integer psCd;
 
 	// Hotel Information
-	private Integer hotelTypeId;
+	private Long hotelTypeId;
 	private Integer noOfRooms;
 	private Integer noOfFloors;
 

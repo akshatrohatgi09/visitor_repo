@@ -77,6 +77,7 @@ public class HotelServiceImpl implements HotelService {
 
 			validateDuplicate(req, null);
 
+			Integer hotelTypeId = req.getHotelTypeId().intValue();
 			Hotel hotel = Hotel.builder()
 
 					.hotelName(req.getHotelName().trim()).ownerName(req.getOwnerName().trim())
@@ -86,7 +87,7 @@ public class HotelServiceImpl implements HotelService {
 					.stateCd(req.getStateCd()).zoneCd(req.getZoneCd()).rangeCd(req.getRangeCd())
 					.districtCd(req.getDistrictCd()).sdpoCd(req.getSdpoCd()).psCd(req.getPsCd())
 
-					.hotelTypeId(req.getHotelTypeId())
+					.hotelTypeId(hotelTypeId)
 
 					.noOfRooms(req.getNoOfRooms()).noOfFloors(req.getNoOfFloors())
 
@@ -123,7 +124,7 @@ public class HotelServiceImpl implements HotelService {
 
 			log.error("Error while creating Hotel : {}", req, e);
 
-			throw new RuntimeException(e.getMessage());
+			throw new RuntimeException("Error while creating Hotel");
 
 		}
 
@@ -131,7 +132,7 @@ public class HotelServiceImpl implements HotelService {
 
 	private void validateDuplicate(HotelRequestDTO req, Long hotelId) {
 
-		Hotel hotel = hotelRepo.findByMobileNoAndRecordStatusNot(req.getMobileNo(), 'D');
+		Hotel hotel = hotelRepo.findByMobileNoAndRecordStatusNot(req.getMobileNo(), Constants.D);
 
 		if (hotel != null) {
 
@@ -144,7 +145,7 @@ public class HotelServiceImpl implements HotelService {
 
 		if (StringUtils.isNotBlank(req.getEmail())) {
 
-			hotel = hotelRepo.findByEmailIgnoreCaseAndRecordStatusNot(req.getEmail(), 'D');
+			hotel = hotelRepo.findByEmailIgnoreCaseAndRecordStatusNot(req.getEmail(), Constants.D);
 
 			if (hotel != null) {
 
@@ -189,7 +190,7 @@ public class HotelServiceImpl implements HotelService {
 		districtRepository.findByDistrictCdAndRecordStatusNot(req.getManagerDistrictCd(), "D")
 				.orElseThrow(() -> new RuntimeException("Invalid Manager District"));
 
-		hotelTypeRepository.findByHotelTypeIdAndRecordStatusNot(req.getHotelTypeId(), "D")
+		hotelTypeRepository.findByHotelTypeIdAndRecordStatusNot(req.getHotelTypeId(), 'D')
 				.orElseThrow(() -> new RuntimeException("Invalid Hotel Type"));
 
 	}
@@ -457,8 +458,9 @@ public class HotelServiceImpl implements HotelService {
 			hotel.setDistrictCd(req.getDistrictCd());
 			hotel.setSdpoCd(req.getSdpoCd());
 			hotel.setPsCd(req.getPsCd());
-
-			hotel.setHotelTypeId(req.getHotelTypeId());
+			
+			Integer hotelTypeId = req.getHotelTypeId().intValue();
+			hotel.setHotelTypeId(hotelTypeId);
 
 			hotel.setNoOfRooms(req.getNoOfRooms());
 			hotel.setNoOfFloors(req.getNoOfFloors());
