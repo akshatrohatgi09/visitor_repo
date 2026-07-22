@@ -1,6 +1,7 @@
 package com.police.evisitor.repository;
 
-import java.time.LocalDateTime;
+import java.sql.Timestamp;
+import java.time.LocalDate;
 
 public interface HotelListProjection {
 
@@ -13,8 +14,6 @@ public interface HotelListProjection {
 	String getMobileNo();
 
 	String getEmail();
-
-	String getAddress();
 
 	Integer getStateCd();
 
@@ -40,10 +39,64 @@ public interface HotelListProjection {
 
 	String getPoliceStationName();
 
+	Long getHotelTypeId();
+
+	String getHotelTypeName();
+
+	Integer getNoOfRooms();
+
+	Integer getNoOfFloors();
+
+	String getLicenseNumber();
+
+	LocalDate getLicenseValidity();
+
+	String getAddress();
+
+	String getPincode();
+
+	String getLatitude();
+
+	String getLongitude();
+
+	String getBeatNumber();
+
+	String getOwnerAddress();
+
+	Integer getOwnerStateCd();
+
+	String getOwnerStateName();
+
+	Integer getOwnerDistrictCd();
+
+	String getOwnerDistrictName();
+
+	String getOwnerPincode();
+
+	String getManagerName();
+
+	String getManagerEmail();
+
+	String getManagerPhone();
+
+	String getManagerAddress();
+
+	Integer getManagerStateCd();
+
+	String getManagerStateName();
+
+	Integer getManagerDistrictCd();
+
+	String getManagerDistrictName();
+
+	String getManagerPincode();
+
+	String getComment();
+
 	String getRecordStatus();
 
 	String getCreatedBy();
 
-	LocalDateTime getCreatedOn();
+	Timestamp getCreatedOn();
 
 }

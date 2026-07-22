@@ -32,12 +32,48 @@ public interface HotelRepository extends JpaRepository<Hotel, Long> {
 	@Query(value = """
 
 			SELECT
+
 			h.hotel_id AS hotelId,
 			h.hotel_name AS hotelName,
 			h.owner_name AS ownerName,
 			h.mobile_no AS mobileNo,
 			h.email AS email,
+
+			h.hotel_type_id AS hotelTypeId,
+			ht.hotel_type_name AS hotelTypeName,
+
+			h.no_of_rooms AS noOfRooms,
+			h.no_of_floors AS noOfFloors,
+
+			h.license_number AS licenseNumber,
+			h.license_validity AS licenseValidity,
+
 			h.address AS address,
+			h.pincode AS pincode,
+
+			h.latitude AS latitude,
+			h.longitude AS longitude,
+
+			h.beat_number AS beatNumber,
+
+			h.owner_address AS ownerAddress,
+			h.owner_state_cd AS ownerStateCd,
+			os.state_name AS ownerStateName,
+			h.owner_district_cd AS ownerDistrictCd,
+			od.district AS ownerDistrictName,
+			h.owner_pincode AS ownerPincode,
+
+			h.manager_name AS managerName,
+			h.manager_email AS managerEmail,
+			h.manager_phone AS managerPhone,
+			h.manager_address AS managerAddress,
+			h.manager_state_cd AS managerStateCd,
+			ms.state_name AS managerStateName,
+			h.manager_district_cd AS managerDistrictCd,
+			md.district AS managerDistrictName,
+			h.manager_pincode AS managerPincode,
+
+			h.comment AS comment,
 
 			h.state_cd AS stateCd,
 			st.state_name AS stateName,
@@ -80,6 +116,21 @@ public interface HotelRepository extends JpaRepository<Hotel, Long> {
 
 			LEFT JOIN m_police_station ps
 			ON ps.ps_cd = h.ps_cd
+
+			LEFT JOIN m_hotel_type ht
+			ON ht.hotel_type_id = h.hotel_type_id
+
+			LEFT JOIN m_state os
+			ON os.state_cd = h.owner_state_cd
+
+			LEFT JOIN m_district od
+			ON od.district_cd = h.owner_district_cd
+
+			LEFT JOIN m_state ms
+			ON ms.state_cd = h.manager_state_cd
+
+			LEFT JOIN m_district md
+			ON md.district_cd = h.manager_district_cd
 
 			WHERE (:stateCd IS NULL OR h.state_cd = :stateCd)
 			AND (:zoneCd IS NULL OR h.zone_cd = :zoneCd)
