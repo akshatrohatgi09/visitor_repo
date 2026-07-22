@@ -8,13 +8,13 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
-import com.police.evisitor.controller.UserController;
 import com.police.evisitor.dto.request.LoginRequestDTO;
 import com.police.evisitor.dto.response.LoginResponseDTO;
 import com.police.evisitor.entity.User;
 import com.police.evisitor.repository.UserRepository;
 import com.police.evisitor.service.AuthService;
 import com.police.evisitor.service.LoginProjection;
+import com.police.evisitor.util.JWTUtility;
 
 import jakarta.transaction.Transactional;
 
@@ -26,6 +26,9 @@ public class AuthServiceImpl implements AuthService {
 
 	@Autowired
 	private PasswordEncoder passwordEncoder;
+	
+	@Autowired
+	private JWTUtility jwtUtility;
 
 	@Override
 	@Transactional
@@ -59,6 +62,10 @@ public class AuthServiceImpl implements AuthService {
 		response.setDistrictName(user.getDistrict());
 
 		response.setPsName(user.getPs());
+		
+		String token = jwtUtility.generateTokenBySSOId(user.getUserLogin());
+		
+		response.setToken(token);
 
 		return response;
 	}
