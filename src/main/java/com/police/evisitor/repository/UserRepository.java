@@ -11,6 +11,7 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
 
 import com.police.evisitor.entity.User;
+import com.police.evisitor.service.LoginProjection;
 
 @Repository
 public interface UserRepository extends JpaRepository<User, Long> {
@@ -196,5 +197,82 @@ public interface UserRepository extends JpaRepository<User, Long> {
 			LocalDate fromDate, LocalDate toDate, Pageable pageable
 
 	);
+
+	@Query(value = """
+			SELECT
+
+			u.user_id AS userId,
+			u.first_name AS firstName,
+			u.last_name AS lastName,
+			u.user_login AS userLogin,
+			u.user_mob AS userMob,
+			u.user_email AS userEmail,
+
+			u.user_password AS userPassword,
+
+			r.role_id AS roleId,
+			r.role_name AS roleName,
+
+			u.nationality_cd AS nationalityCd,
+
+			s.state_cd AS stateCd,
+			s.state_name AS stateName,
+
+			z.zone_cd AS zoneCd,
+			z.zone_name AS zoneName,
+
+			rg.range_cd AS rangeCd,
+			rg.range_name AS rangeName,
+
+			d.district_cd AS districtCd,
+			d.district AS district,
+
+			sd.sdpo_cd AS sdpoCd,
+			sd.sdpo_name AS sdpoName,
+
+			ps.ps_cd AS psCd,
+			ps.ps AS ps,
+
+			h.hotel_id AS hotelCd,
+			h.hotel_name AS hotelName,
+
+			u.user_address AS userAddress,
+			u.user_state_cd AS userStateCd,
+			u.user_district_cd AS userDistrictCd,
+			u.pincode,
+
+			u.login_status AS loginStatus,
+			u.last_logged_in AS lastLoggedIn
+
+			FROM t_users u
+
+			LEFT JOIN m_roles r
+			ON u.user_role_id=r.role_id
+
+			LEFT JOIN m_state s
+			ON u.state_cd=s.state_cd
+
+			LEFT JOIN m_zone z
+			ON u.zone_cd=z.zone_cd
+
+			LEFT JOIN m_range rg
+			ON u.range_cd=rg.range_cd
+
+			LEFT JOIN m_district d
+			ON u.district_cd=d.district_cd
+
+			LEFT JOIN m_sdpo sd
+			ON u.sdpo_cd=sd.sdpo_cd
+
+			LEFT JOIN m_police_station ps
+			ON u.ps_cd=ps.ps_cd
+
+			LEFT JOIN t_hotels h
+			ON u.hotel_cd=h.hotel_id
+
+			WHERE u.user_login=:login
+			AND u.record_status='C'
+			""", nativeQuery = true)
+	Optional<LoginProjection> loginUser(String login);
 
 }

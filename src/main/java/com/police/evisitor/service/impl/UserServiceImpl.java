@@ -21,6 +21,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -89,6 +90,9 @@ public class UserServiceImpl implements UserService {
 
 	@Autowired
 	private PoliceStationRepository policeStationRepository;
+	
+	@Autowired
+	private PasswordEncoder passwordEncoder;
 
 	private static final List<String> EXPECTED_HEADERS = Arrays.asList("Fist Name", "Last Name", "Login", "Password",
 			"Mobile", "Email", "Role", "State", "Zone", "Range", "District", "SDPO", "Police Station", "Hotel",
@@ -121,6 +125,7 @@ public class UserServiceImpl implements UserService {
 
 			user.setUserRoleId(reqDto.getRoleId());
 
+			user.setUserPassword(passwordEncoder.encode(reqDto.getUserPassword()));
 			user.setStateCd(reqDto.getStateCd());
 			user.setZoneCd(reqDto.getZoneCd());
 			user.setRangeCd(reqDto.getRangeCd());
@@ -377,6 +382,7 @@ public class UserServiceImpl implements UserService {
 
 			modelMapper.map(reqDto, user);
 
+			user.setUserPassword(passwordEncoder.encode(reqDto.getUserPassword()));
 			user.setUserRoleId(reqDto.getRoleId());
 
 			user.setUserLogin(reqDto.getUserLogin().trim().toLowerCase());

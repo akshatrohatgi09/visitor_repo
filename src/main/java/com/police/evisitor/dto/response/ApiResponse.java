@@ -16,6 +16,7 @@ import lombok.NoArgsConstructor;
 @Builder
 @JsonInclude(JsonInclude.Include.NON_NULL)
 public class ApiResponse<T> {
+	
 	private String message;
 	private List<String> errors;
 	private String status;
