@@ -8,6 +8,9 @@ import org.springframework.stereotype.Service;
 import com.police.evisitor.dto.request.DistrictDTO;
 import com.police.evisitor.dto.request.HotelTypeResponseDTO;
 import com.police.evisitor.dto.request.PoliceStationDTO;
+import com.police.evisitor.dto.response.ApiResponse;
+import com.police.evisitor.dto.response.CountryResponseDTO;
+import com.police.evisitor.entity.Country;
 import com.police.evisitor.entity.HotelTypes;
 import com.police.evisitor.entity.MasterDocument;
 import com.police.evisitor.entity.Menu;
@@ -18,6 +21,7 @@ import com.police.evisitor.entity.State;
 import com.police.evisitor.entity.StateRepository;
 import com.police.evisitor.entity.VisitReason;
 import com.police.evisitor.entity.Zone;
+import com.police.evisitor.repository.CountryRepository;
 import com.police.evisitor.repository.DistrictRepository;
 import com.police.evisitor.repository.HotelTypeRepository;
 import com.police.evisitor.repository.MasterDocumentRepository;
@@ -32,7 +36,9 @@ import com.police.evisitor.service.MasterService;
 import com.police.evisitor.util.Constants;
 
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class MasterServiceImpl implements MasterService {
@@ -67,6 +73,9 @@ public class MasterServiceImpl implements MasterService {
 
 	@Autowired
 	private HotelTypeRepository hotelTypeRepository;
+
+	@Autowired
+	private CountryRepository countryRepository;
 
 	@Override
 	public List<DistrictDTO> getDistricts(Integer stateCd) {
@@ -140,4 +149,23 @@ public class MasterServiceImpl implements MasterService {
 		return hotelTypes.stream().map(type -> HotelTypeResponseDTO.builder().hotelTypeId(type.getHotelTypeId())
 				.hotelTypeName(type.getHotelTypeName()).build()).toList();
 	}
+
+	@Override
+	public ApiResponse<?> getCountries() {
+
+		try {
+			List<Country> countries = countryRepository.findByRecordStatusOrderByCountryNameAsc("C");
+			
+			List<CountryResponseDTO> response = countries.stream()
+					.map(country -> new CountryResponseDTO(country.getCountryCd(), country.getCountryName())).toList();
+
+			return ApiResponse.builder().status("SUCCESS").message("Country list fetched successfully.").data(response)
+					.build();
+
+		} catch (Exception e) {
+			log.error("Error----" + e.getMessage());
+			return null;
+		}
+	}
+
 }

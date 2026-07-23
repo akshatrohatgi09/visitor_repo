@@ -19,75 +19,58 @@ import com.police.evisitor.filter.JwtAuthenticationFilter;
 @Configuration
 public class SecurityConfig {
 
-    private final JwtAuthenticationFilter jwtFilter;
+	private final JwtAuthenticationFilter jwtFilter;
 
-    public SecurityConfig(JwtAuthenticationFilter jwtFilter) {
-        this.jwtFilter = jwtFilter;
-    }
+	public SecurityConfig(JwtAuthenticationFilter jwtFilter) {
+		this.jwtFilter = jwtFilter;
+	}
 
-    @Bean
-    public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
+	@Bean
+	public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
 
-        http
-            .cors(cors -> cors.configurationSource(corsConfigurationSource()))
-            .csrf(csrf -> csrf.disable())
+		http.cors(cors -> cors.configurationSource(corsConfigurationSource())).csrf(csrf -> csrf.disable())
 
-            // JWT applications should be stateless
-            .sessionManagement(session ->
-                    session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
+				// JWT applications should be stateless
+				.sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
 
-            .authorizeHttpRequests(auth -> auth
+				.authorizeHttpRequests(auth -> auth
 
-                    // Public APIs
-                    .requestMatchers(
-                            "/login",
-                            "/register",
-                            "/swagger-ui/**",
-                            "/v3/api-docs/**",
-                            "/swagger-resources/**",
-                            "/webjars/**",
-                            "/actuator/**"
-                    ).permitAll()
+						// Public APIs
+						.requestMatchers("/visitor/login", "/register", "/swagger-ui/**", "/v3/api-docs/**",
+								"/swagger-resources/**", "/webjars/**", "/actuator/**")
+						.permitAll()
 
-                    // Everything else requires JWT
-                    .anyRequest().authenticated())
+						// Everything else requires JWT
+						.anyRequest().authenticated())
 
-            // JWT Filter
-            .addFilterBefore(jwtFilter, UsernamePasswordAuthenticationFilter.class);
+				// JWT Filter
+				.addFilterBefore(jwtFilter, UsernamePasswordAuthenticationFilter.class);
 
-        return http.build();
-    }
+		return http.build();
+	}
 
-    @Bean
-    public CorsConfigurationSource corsConfigurationSource() {
+	@Bean
+	public CorsConfigurationSource corsConfigurationSource() {
 
-        CorsConfiguration configuration = new CorsConfiguration();
+		CorsConfiguration configuration = new CorsConfiguration();
 
-        configuration.setAllowedOrigins(List.of("*"));
+		configuration.setAllowedOrigins(List.of("*"));
 
-        configuration.setAllowedMethods(
-                List.of(
-                        "GET",
-                        "POST",
-                        "PUT",
-                        "DELETE",
-                        "PATCH",
-                        "OPTIONS"));
+		configuration.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS"));
 
-        configuration.setAllowedHeaders(List.of("*"));
+		configuration.setAllowedHeaders(List.of("*"));
 
-        configuration.setAllowCredentials(false);
+		configuration.setAllowCredentials(false);
 
-        UrlBasedCorsConfigurationSource source =
-                new UrlBasedCorsConfigurationSource();
+		UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
 
-        source.registerCorsConfiguration("/**", configuration);
+		source.registerCorsConfiguration("/**", configuration);
 
-        return source;
-    }
+		return source;
+	}
 
-    @Bean
-    public PasswordEncoder passwordEncoder() {
-        return new BCryptPasswordEncoder();
-    }
+	@Bean
+	public PasswordEncoder passwordEncoder() {
+		return new BCryptPasswordEncoder();
+	}
 }

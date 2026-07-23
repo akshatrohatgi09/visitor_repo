@@ -25,13 +25,20 @@ public class AuthController {
 	private AuthService authService;
 
 	@PostMapping("/login")
-	public ResponseEntity<ApiResponse<LoginResponseDTO>> login(@RequestBody LoginRequestDTO request)
-			throws BadRequestException {
+	public ResponseEntity<Object> login(@RequestBody LoginRequestDTO request) {
 
-		LoginResponseDTO response = authService.login(request);
+		System.out.println("Login API called");
+		System.out.println(request);
 
-		return ResponseEntity.ok(ApiResponse.<LoginResponseDTO>builder().status("SUCCESS").message("Login Successful")
-				.data(response).build());
+		LoginResponseDTO response = null;
+		try {
+			response = authService.login(request);
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+
+		return ResponseEntity
+				.ok(ApiResponse.builder().status("SUCCESS").message("Login Successfully").data(response).build());
 	}
 
 	@PostMapping("/logout")

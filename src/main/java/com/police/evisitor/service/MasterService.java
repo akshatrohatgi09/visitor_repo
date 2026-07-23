@@ -5,6 +5,7 @@ import java.util.List;
 import com.police.evisitor.dto.request.DistrictDTO;
 import com.police.evisitor.dto.request.HotelTypeResponseDTO;
 import com.police.evisitor.dto.request.PoliceStationDTO;
+import com.police.evisitor.dto.response.ApiResponse;
 import com.police.evisitor.entity.MasterDocument;
 import com.police.evisitor.entity.Menu;
 import com.police.evisitor.entity.Range;
@@ -39,5 +40,7 @@ public interface MasterService {
 	List<DistrictDTO> getAllDistricts();
 	
 	List<HotelTypeResponseDTO> getHotelTypes();
+	
+	ApiResponse<?> getCountries();
 
 }

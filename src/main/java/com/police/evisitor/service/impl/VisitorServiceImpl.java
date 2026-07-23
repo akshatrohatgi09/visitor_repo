@@ -1,6 +1,5 @@
 package com.police.evisitor.service.impl;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 
@@ -10,10 +9,7 @@ import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.police.evisitor.dto.request.VisitorRequestDTO;
-import com.police.evisitor.dto.response.DocumentData;
-import com.police.evisitor.entity.DocFile;
 import com.police.evisitor.entity.Hotel;
-import com.police.evisitor.entity.MasterDocument;
 import com.police.evisitor.entity.User;
 import com.police.evisitor.entity.Visitor;
 import com.police.evisitor.exception.NotFound;

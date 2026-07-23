@@ -32,42 +32,47 @@ public class AuthServiceImpl implements AuthService {
 
 	@Override
 	@Transactional
-	public LoginResponseDTO login(LoginRequestDTO request) throws BadRequestException {
+	public LoginResponseDTO login(LoginRequestDTO request){
 
-		LoginProjection user = repository.loginUser(request.getUserLogin())
-				.orElseThrow(() -> new BadRequestException("Invalid Login Id"));
+		try {
+			LoginProjection user = repository.loginUser(request.getUserLogin())
+					.orElseThrow(() -> new BadRequestException("Invalid Login Id"));
 
-		if (!passwordEncoder.matches(request.getPassword(), user.getUserPassword())) {
+			if (!passwordEncoder.matches(request.getPassword(), user.getUserPassword())) {
 
-			throw new BadRequestException("Invalid Password");
+				throw new BadRequestException("Invalid Password");
+			}
+
+			User entity = repository.findById(user.getUserId()).get();
+
+			entity.setLoginStatus(true);
+			entity.setLastLoggedIn(LocalDateTime.now());
+
+			repository.save(entity);
+
+			LoginResponseDTO response = new LoginResponseDTO();
+
+			BeanUtils.copyProperties(user, response);
+
+			response.setFullName(user.getFirstName() + " " + user.getLastName());
+
+			response.setMobile(user.getUserMob());
+
+			response.setEmail(user.getUserEmail());
+
+			response.setDistrictName(user.getDistrict());
+
+			response.setPsName(user.getPs());
+			
+			String token = jwtUtility.generateTokenBySSOId(user.getUserLogin());
+			
+			response.setToken(token);
+
+			return response;
+		} catch (Exception e) {
+			return null;
 		}
-
-		User entity = repository.findById(user.getUserId()).get();
-
-		entity.setLoginStatus(true);
-		entity.setLastLoggedIn(LocalDateTime.now());
-
-		repository.save(entity);
-
-		LoginResponseDTO response = new LoginResponseDTO();
-
-		BeanUtils.copyProperties(user, response);
-
-		response.setFullName(user.getFirstName() + " " + user.getLastName());
-
-		response.setMobile(user.getUserMob());
-
-		response.setEmail(user.getUserEmail());
-
-		response.setDistrictName(user.getDistrict());
-
-		response.setPsName(user.getPs());
 		
-		String token = jwtUtility.generateTokenBySSOId(user.getUserLogin());
-		
-		response.setToken(token);
-
-		return response;
 	}
 
 	@Override

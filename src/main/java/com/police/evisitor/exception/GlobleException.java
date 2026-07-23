@@ -14,7 +14,7 @@ import com.police.evisitor.dto.response.ApiResponse;
 public class GlobleException {
 
 	@ExceptionHandler(ResourceNotFoundException.class)
-	public ResponseEntity<com.police.evisitor.dto.response.ApiResponse<?>> handleResourceNotFoundException(
+	public ResponseEntity<ApiResponse<?>> handleResourceNotFoundException(
 			ResourceNotFoundException ex) {
 		List<String> errors = new ArrayList<String>();
 		errors.add(ex.getMessage());

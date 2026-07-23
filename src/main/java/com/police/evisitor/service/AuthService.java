@@ -7,7 +7,7 @@ import com.police.evisitor.dto.response.LoginResponseDTO;
 
 public interface AuthService {
 
-	LoginResponseDTO login(LoginRequestDTO request) throws BadRequestException;
+	LoginResponseDTO login(LoginRequestDTO request);
 
 	void logout(String userLogin) throws BadRequestException;
 }

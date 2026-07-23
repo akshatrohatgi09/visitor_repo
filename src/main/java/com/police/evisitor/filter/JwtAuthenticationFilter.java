@@ -1,64 +1,74 @@
 package com.police.evisitor.filter;
 
-import com.police.evisitor.util.JWTUtility;
-import jakarta.servlet.FilterChain;
-import jakarta.servlet.ServletException;
-import jakarta.servlet.http.HttpServletRequest;
-import jakarta.servlet.http.HttpServletResponse;
+import java.io.IOException;
+
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.authority.AuthorityUtils;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
 
-import java.io.IOException;
+import com.police.evisitor.util.JWTUtility;
+
+import jakarta.servlet.FilterChain;
+import jakarta.servlet.ServletException;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
 
 @Component
 public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
-    private final JWTUtility jwtUtility;
+	private final JWTUtility jwtUtility;
 
-    public JwtAuthenticationFilter(JWTUtility jwtUtility) {
-        this.jwtUtility = jwtUtility;
-    }
+	public JwtAuthenticationFilter(JWTUtility jwtUtility) {
+		this.jwtUtility = jwtUtility;
+	}
 
-    @Override
-    protected void doFilterInternal(HttpServletRequest request,
-                                    HttpServletResponse response,
-                                    FilterChain filterChain)
-            throws ServletException, IOException {
+	/**
+	 * Skip JWT validation for public APIs.
+	 */
+	@Override
+	protected boolean shouldNotFilter(HttpServletRequest request) {
 
-        String header = request.getHeader("Authorization");
+		String path = request.getServletPath();
 
-        if (header != null && header.startsWith("Bearer ")) {
+		return path.equals("/visitor/login") || path.equals("/visitor/register") || path.startsWith("/swagger-ui")
+				|| path.startsWith("/v3/api-docs") || path.startsWith("/swagger-resources")
+				|| path.startsWith("/webjars") || path.startsWith("/actuator");
+	}
 
-            String token = header.substring(7);
+	@Override
+	protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain)
+			throws ServletException, IOException {
 
-            try {
+		String header = request.getHeader("Authorization");
 
-                String username = jwtUtility.extractUsername(token);
+		if (header != null && header.startsWith("Bearer ")) {
 
-                if (username != null &&
-                        SecurityContextHolder.getContext().getAuthentication() == null &&
-                        jwtUtility.validateToken(token, username)) {
+			String token = header.substring(7);
 
-                    UsernamePasswordAuthenticationToken authentication =
-                            new UsernamePasswordAuthenticationToken(
-                                    username,
-                                    null,
-                                    AuthorityUtils.NO_AUTHORITIES);
+			try {
 
-                    SecurityContextHolder.getContext().setAuthentication(authentication);
-                }
+				String username = jwtUtility.extractUsername(token);
 
-            } catch (Exception ex) {
+				if (username != null && SecurityContextHolder.getContext().getAuthentication() == null
+						&& jwtUtility.validateToken(token, username)) {
 
-                response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
-                response.getWriter().write("Invalid JWT Token");
-                return;
-            }
-        }
+					UsernamePasswordAuthenticationToken authentication = new UsernamePasswordAuthenticationToken(
+							username, null, AuthorityUtils.NO_AUTHORITIES);
 
-        filterChain.doFilter(request, response);
-    }
+					SecurityContextHolder.getContext().setAuthentication(authentication);
+				}
+
+			} catch (Exception ex) {
+
+				response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+				response.setContentType("application/json");
+				response.getWriter().write("{\"status\":false,\"message\":\"Invalid JWT Token\"}");
+				return;
+			}
+		}
+
+		filterChain.doFilter(request, response);
+	}
 }

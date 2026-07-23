@@ -25,6 +25,12 @@ public class MasterController {
 
 	private final MasterService masterService;
 
+	@GetMapping("/countries")
+	public ResponseEntity<ApiResponse<?>> getCountries() {
+
+		return ResponseEntity.ok(masterService.getCountries());
+	}
+
 	@GetMapping("/states")
 	public ResponseEntity<?> getStates() {
 		return ResponseEntity.ok(masterService.getStates());
