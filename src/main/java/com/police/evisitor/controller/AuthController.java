@@ -33,12 +33,13 @@ public class AuthController {
 		LoginResponseDTO response = null;
 		try {
 			response = authService.login(request);
+			return ResponseEntity
+					.ok(ApiResponse.builder().status("success").message("Login Successfully").data(response).build());
 		} catch (Exception e) {
 			e.printStackTrace();
+			return ResponseEntity
+					.ok(ApiResponse.builder().status("Failed").message("Invalid Id Password").data(response).build());
 		}
-
-		return ResponseEntity
-				.ok(ApiResponse.builder().status("SUCCESS").message("Login Successfully").data(response).build());
 	}
 
 	@PostMapping("/logout")

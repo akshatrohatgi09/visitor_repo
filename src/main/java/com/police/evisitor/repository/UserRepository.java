@@ -29,7 +29,7 @@ public interface UserRepository extends JpaRepository<User, Long> {
 	Optional<User> findByUserId(Long userId);
 
 	@Query(value = """
-			SELECT
+						SELECT
 			u.user_id AS userId,
 			u.user_role_id AS roleId,
 			r.role_name AS roleName,
@@ -119,6 +119,11 @@ public interface UserRepository extends JpaRepository<User, Long> {
 			AND (:hotelCd IS NULL OR u.hotel_cd = :hotelCd)
 
 			AND (
+			    :loginRoleId IS NULL
+			    OR u.user_role_id > :loginRoleId
+			)
+
+			AND (
 			    :roleId IS NULL
 			    OR u.user_role_id = :roleId
 			)
@@ -147,21 +152,26 @@ public interface UserRepository extends JpaRepository<User, Long> {
 
 			ORDER BY u.created_on DESC
 
-			""",
+						""",
 
 			countQuery = """
 
-					SELECT COUNT(*)
+										SELECT COUNT(*)
 
 					FROM t_users u
 
-					WHERE String(:stateCd IS NULL OR u.state_cd = :stateCd)
+					WHERE (:stateCd IS NULL OR u.state_cd = :stateCd)
 					AND (:zoneCd IS NULL OR u.zone_cd = :zoneCd)
 					AND (:rangeCd IS NULL OR u.range_cd = :rangeCd)
 					AND (:districtCd IS NULL OR u.district_cd = :districtCd)
 					AND (:sdpoCd IS NULL OR u.sdpo_cd = :sdpoCd)
 					AND (:psCd IS NULL OR u.ps_cd = :psCd)
 					AND (:hotelCd IS NULL OR u.hotel_cd = :hotelCd)
+
+					AND (
+					    :loginRoleId IS NULL
+					    OR u.user_role_id > :loginRoleId
+					)
 
 					AND (
 					    :roleId IS NULL
@@ -190,13 +200,11 @@ public interface UserRepository extends JpaRepository<User, Long> {
 					    OR DATE(u.created_on) BETWEEN :fromDate AND :toDate
 					)
 
-					""", nativeQuery = true)
+										""", nativeQuery = true)
 
 	Page<UserListProjection> getUsers(Integer stateCd, Integer zoneCd, Integer rangeCd, Integer districtCd,
-			Integer sdpoCd, Integer psCd, Long hotelCd, Long roleId, String name, String userLogin, String mobile,
-			LocalDate fromDate, LocalDate toDate, Pageable pageable
-
-	);
+			Integer sdpoCd, Integer psCd, Long hotelCd, Long loginRoleId, Long roleId, String name, String userLogin,
+			String mobile, LocalDate fromDate, LocalDate toDate, Pageable pageable);
 
 	@Query(value = """
 			SELECT

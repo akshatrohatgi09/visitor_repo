@@ -25,6 +25,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
+import com.police.evisitor.dto.request.DataScopeDTO;
 import com.police.evisitor.dto.request.UserListRequestDTO;
 import com.police.evisitor.dto.request.UserRequestDTO;
 import com.police.evisitor.dto.response.BulkUploadResponse;
@@ -93,6 +94,9 @@ public class UserServiceImpl implements UserService {
 	
 	@Autowired
 	private PasswordEncoder passwordEncoder;
+	
+	@Autowired
+	private DataScopeService dataScopeService;
 
 	private static final List<String> EXPECTED_HEADERS = Arrays.asList("Fist Name", "Last Name", "Login", "Password",
 			"Mobile", "Email", "Role", "State", "Zone", "Range", "District", "SDPO", "Police Station", "Hotel",
@@ -764,82 +768,23 @@ public class UserServiceImpl implements UserService {
 			throw new RuntimeException("Invalid Login User.");
 		}
 
-		Integer stateCd = request.getStateCd();
-		Integer zoneCd = request.getZoneCd();
-		Integer rangeCd = request.getRangeCd();
-		Integer districtCd = request.getDistrictCd();
-		Integer sdpoCd = request.getSdpoCd();
-		Integer psCd = request.getPsCd();
-		Long hotelCd = request.getHotelCd();
+		DataScopeDTO scope = dataScopeService.getDataScope(loginUser);
+
+		Integer stateCd = scope.getStateCd();
+		Integer zoneCd = scope.getZoneCd();
+		Integer rangeCd = scope.getRangeCd();
+		Integer districtCd = scope.getDistrictCd();
+		Integer sdpoCd = scope.getSdpoCd();
+		Integer psCd = scope.getPsCd();
+		Long hotelCd = scope.getHotelCd();
+		Long loginRoleId = scope.getLoginRoleId();
+
 		Long roleId = request.getRoleId();
-
-		switch (loginUser.getUserRoleId().intValue()) {
-
-		case 1:
-			// Admin - no restriction
-			break;
-
-		case 2:
-			stateCd = loginUser.getStateCd();
-			break;
-
-		case 3:
-			stateCd = loginUser.getStateCd();
-			zoneCd = loginUser.getZoneCd();
-			break;
-
-		case 4:
-			stateCd = loginUser.getStateCd();
-			zoneCd = loginUser.getZoneCd();
-			rangeCd = loginUser.getRangeCd();
-			break;
-
-		case 5:
-			stateCd = loginUser.getStateCd();
-			zoneCd = loginUser.getZoneCd();
-			rangeCd = loginUser.getRangeCd();
-			districtCd = loginUser.getDistrictCd();
-			break;
-
-		case 6:
-			stateCd = loginUser.getStateCd();
-			zoneCd = loginUser.getZoneCd();
-			rangeCd = loginUser.getRangeCd();
-			districtCd = loginUser.getDistrictCd();
-			sdpoCd = loginUser.getSdpoCd();
-			break;
-
-		case 7:
-			stateCd = loginUser.getStateCd();
-			zoneCd = loginUser.getZoneCd();
-			rangeCd = loginUser.getRangeCd();
-			districtCd = loginUser.getDistrictCd();
-			sdpoCd = loginUser.getSdpoCd();
-			psCd = loginUser.getPsCd();
-			break;
-
-		case 8:
-			stateCd = loginUser.getStateCd();
-			zoneCd = loginUser.getZoneCd();
-			rangeCd = loginUser.getRangeCd();
-			districtCd = loginUser.getDistrictCd();
-			sdpoCd = loginUser.getSdpoCd();
-			psCd = loginUser.getPsCd();
-			hotelCd = loginUser.getHotelCd();
-			break;
-
-		case 9:
-			hotelCd = loginUser.getHotelCd();
-			break;
-
-		default:
-			throw new RuntimeException("Invalid User Role.");
-		}
 
 		Pageable pageable = PageRequest.of(request.getPageNo(), request.getPageSize());
 
-		return userRepo.getUsers(stateCd, zoneCd, rangeCd, districtCd, sdpoCd, psCd, hotelCd, roleId, request.getName(),
-				request.getUserLogin(), request.getMobile(), request.getFromDate(),
+		return userRepo.getUsers(stateCd, zoneCd, rangeCd, districtCd, sdpoCd, psCd, hotelCd, loginRoleId, roleId,
+				request.getName(), request.getUserLogin(), request.getMobile(), request.getFromDate(),
 				request.getToDate(), pageable);
 	}
 }
