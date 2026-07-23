@@ -1,14 +1,21 @@
 package com.police.evisitor.service.impl;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
+import java.util.stream.Collectors;
 
+import org.apache.coyote.BadRequestException;
+import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 
+import com.police.evisitor.dto.request.VisitorCheckoutRequestDTO;
 import com.police.evisitor.dto.request.VisitorRequestDTO;
+import com.police.evisitor.dto.response.ApiResponse;
+import com.police.evisitor.entity.DocFile;
 import com.police.evisitor.entity.Hotel;
 import com.police.evisitor.entity.User;
 import com.police.evisitor.entity.Visitor;
@@ -20,7 +27,6 @@ import com.police.evisitor.repository.UserRepository;
 import com.police.evisitor.repository.VisitorRepository;
 import com.police.evisitor.service.VisitorService;
 import com.police.evisitor.util.Constants;
-import com.police.evisitor.util.SaveParentVisitor;
 import com.police.evisitor.validation.VisitorRequestValidator;
 
 import lombok.extern.slf4j.Slf4j;
@@ -33,19 +39,13 @@ public class VisitorServiceImpl implements VisitorService {
 	private VisitorRequestValidator visitorRequestValidator;
 
 	@Autowired
-	private MasterDocumentRepository masterDocumentRepository;
-
-	@Autowired
 	private HotelRepository hotelRepository;
 
 	@Autowired
 	private UserRepository userRepository;
 
 	@Autowired
-	private VisitorRepository visitorRepository;
-
-	@Autowired
-	private SaveParentVisitor saveParentVisitor;
+	private MasterDocumentRepository documentRepository;
 
 	@Autowired
 	private DocFileRepository fileRepository;
@@ -53,30 +53,24 @@ public class VisitorServiceImpl implements VisitorService {
 	@Autowired
 	private VisitorRepository visitorRepo;
 
+	@Autowired
+	private ModelMapper modelMapper;
+
 	@Transactional(propagation = Propagation.REQUIRED)
 	@Override
 	public String addVisitor(List<VisitorRequestDTO> requestList, String loginId) {
 
-		int flag = 0;
 		String response = "Visitor Not Save";
 
 		Hotel hotel = null;
 		User user = null;
-		Visitor parent = null;
 
 		for (VisitorRequestDTO requestDto : requestList) {
 
-			// Request Validation of Add Visitor
 			String validationMessage = visitorRequestValidator.validateVisitorRequest(requestDto);
 			if (Objects.nonNull(validationMessage)) {
 				return validationMessage;
 			}
-
-			String aadharRefNo = requestDto.getDocumentNo();
-
-//			if (requestDto.getDocumentType() != null && requestDto.getDocumentType() == 1) {
-//				aadharRefNo = getAadharRefNumber(requestDto.getDocumentNo());
-//			}
 
 			if (Objects.nonNull(requestDto.getHotel())) {
 				hotel = hotelRepository.findById(requestDto.getHotel())
@@ -88,103 +82,99 @@ public class VisitorServiceImpl implements VisitorService {
 						.orElseThrow(() -> new NotFound("User not found for ID: " + requestDto.getUser()));
 			}
 
+			if (Objects.nonNull(requestDto.getDocumentType())) {
+				documentRepository.findByDocumentIdAndRecordStatusNot(requestDto.getDocumentType(), Constants.D)
+						.orElseThrow(
+								() -> new NotFound("Document type not found for ID: " + requestDto.getDocumentType()));
+			}
 			// Creating Visitor Entity Data From Request DTO And Saving in DB
-			Visitor visitor = new Visitor();
-			getVisitorDataEntity(requestDto, hotel, user, aadharRefNo, loginId, visitor);
 
-			switch (flag) {
-			case 0 -> {
-				parent = saveParentVisitor.saveParent(visitor);
-				visitorRepo.flush();
-				response = "Visitor saved successfully without sub-visitor.";
-			}
-			default -> {
-				// Adding Parent to Child Visitor for Reference
-				visitor.setVisitorRef(parent);
-				visitorRepo.save(visitor);
+			Visitor visitor = getVisitorDataEntity(requestDto, hotel, user);
 
-				response = "Visitor saved successfully with " + flag + " sub-visitor.";
-			}
-			}
+			visitor = visitorRepo.save(visitor);
 
-			flag++;
+			updateVisitorIdForDocuments(visitor.getId(), requestDto);
+
+			response = "Visitor saved successfully";
+
 		}
-
-		response = "Visitor Added Successfully.";
 		return response;
 	}
 
-//	public List<DocumentData> getVisitorDocuments(List<Long> docIds, Integer documentType, Long visitorId,
-//			String operation) {
-//
-//		List<DocumentData> visitorDocuments = new ArrayList<>();
-//		List<DocFile> docFiles = new ArrayList<>();
-//
-//		docIds.forEach(docId -> {
-//			DocFile docFileEle = fileRepository.findByDocIdAndRecordStatusNot(docId, Constants.D);
-//			docFileEle.setVisitorId(visitorId);
-//			if (documentType != null && operation.equalsIgnoreCase("update")) {
-//				MasterDocument documentId = masterDocumentRepository.findByDocumentIdAndRecordStatusNot(documentType,
-//						Constants.D);
-//				docFileEle.setDocumentType(documentId);
-//			}
-//			docFiles.add(docFileEle);
-//
-//			DocumentData docIdObj = new DocumentData();
-//			docIdObj.setFileId(Math.toIntExact(docId));
-//			docIdObj.setFileName(docFileEle.getFileName());
-//			visitorDocuments.add(docIdObj);
-//		});
-//
-//		if (!docFiles.isEmpty()) {
-//			try {
-//				assert false;
-//				fileRepository.saveAll(docFiles);
-//			} catch (Exception e) {
-//				throw new RuntimeException(e);
-//			}
-//		}
-//
-//		return visitorDocuments;
-//	}
+	private void updateVisitorIdForDocuments(Long visitorId, VisitorRequestDTO requestDto) {
 
-	public void getVisitorDataEntity(VisitorRequestDTO requestDto, Hotel hotel, User user, String aadharRefNo,
-			String uId, Visitor visitor) {
+		List<Long> allDocIds = new ArrayList<>();
 
-		if (Objects.nonNull(requestDto.getVisitorRef())) {
-
-			Visitor visitorRef = visitorRepository.findById(requestDto.getVisitorRef())
-					.orElseThrow(() -> new NotFound("VisitorRef not found for ID: " + requestDto.getVisitorRef()));
-			visitor.setVisitorRef(visitorRef);
+		if (requestDto.getDocIds() != null) {
+			allDocIds.addAll(requestDto.getDocIds());
 		}
-		visitor.setRoomNo(requestDto.getRoomNo());
-		visitor.setCheckInDate(requestDto.getCheckInDate());
-		visitor.setCheckOutDate(requestDto.getCheckOutDate());
-		visitor.setComingLocation(requestDto.getComingLocation());
-		visitor.setGoingLocation(requestDto.getGoingLocation());
-		visitor.setVisitReasonType(requestDto.getVisitReasonType());
-		visitor.setVisitReason(requestDto.getVisitReason());
-		visitor.setNote(requestDto.getNote());
-		visitor.setVisitorName(requestDto.getVisitorName());
-		visitor.setVisitorMobile(requestDto.getVisitorMobile());
-		visitor.setVisitorMail(requestDto.getVisitorMail());
-		visitor.setVisitorDob(requestDto.getVisitorDob());
-		visitor.setNationalityCd(requestDto.getNationalityCd());
-		visitor.setNationalityName(requestDto.getNationalityName());
-		visitor.setVisitorGender(requestDto.getVisitorGender());
-		visitor.setStateCd(requestDto.getStateCd());
-		visitor.setStateName(requestDto.getStateName());
-		visitor.setDistrictCd(requestDto.getDistrictCd());
-		visitor.setDistrictName(requestDto.getDistrictName());
-		visitor.setPsCd(requestDto.getPsCd());
-		visitor.setPsName(requestDto.getPsName());
-		visitor.setVisitorAddress(requestDto.getVisitorAddress());
-		visitor.setDocumentNo(aadharRefNo);
+
+		if (requestDto.getPhotoIds() != null) {
+			allDocIds.addAll(requestDto.getPhotoIds());
+		}
+
+		if (allDocIds.isEmpty()) {
+			return;
+		}
+
+		List<DocFile> documents = fileRepository.findAllById(allDocIds);
+
+		documents.forEach(doc -> doc.setVisitorId(visitorId));
+
+		fileRepository.saveAll(documents);
+	}
+
+	public Visitor getVisitorDataEntity(VisitorRequestDTO requestDto, Hotel hotel, User user) {
+
+		Visitor visitor = modelMapper.map(requestDto, Visitor.class);
+
 		visitor.setUser(user);
 		visitor.setHotel(hotel);
-		visitor.setCreatedBy(uId);
-		visitor.setUpdatedBy(uId);
+
+		if (requestDto.getDocIds() != null && !requestDto.getDocIds().isEmpty()) {
+			visitor.setFilesId(requestDto.getDocIds().stream().map(String::valueOf).collect(Collectors.joining(",")));
+		}
+
+		if (requestDto.getPhotoIds() != null && !requestDto.getPhotoIds().isEmpty()) {
+			visitor.setPhotoId(requestDto.getPhotoIds().stream().map(String::valueOf).collect(Collectors.joining(",")));
+		}
+
+		visitor.setCreatedBy(requestDto.getLoginId());
 		visitor.setRecordStatus(Constants.C);
+
+		return visitor;
+	}
+
+	@Override
+	@Transactional
+	public ApiResponse<?> checkoutVisitor(VisitorCheckoutRequestDTO request) {
+
+//		try {
+//			Visitor visitor = visitorRepo.findByIdAndRecordStatus(request.getVisitorId(), Constants.C)
+//					.orElseThrow(() -> new NotFound("Visitor not found"));
+//
+//			if (visitor.getCheckOutDate() != null) {
+//				throw new BadRequestException("Visitor is already checked out.");
+//			}
+//
+//			if (request.getCheckOutDate() == null) {
+//				throw new BadRequestException("Check-Out Date is required.");
+//			}
+//
+//			if (request.getCheckOutDate().isBefore(visitor.getCheckInDate())) {
+//				throw new BadRequestException("Check-Out Date cannot be earlier than Check-In Date.");
+//			}
+//
+//			visitor.setCheckOutDate(request.getCheckOutDate());
+//			visitor.setUpdatedBy(request.getLoginId());
+//
+//			visitorRepo.save(visitor);
+//
+//			return ApiResponse.builder().status("Success").message("Visitor checked out successfully.").build();
+//		} catch (Exception e) {
+//			return ApiResponse.builder().status("Failed").message("Visitor checkout failed.").build();
+//		}
+		return null;
 	}
 
 }

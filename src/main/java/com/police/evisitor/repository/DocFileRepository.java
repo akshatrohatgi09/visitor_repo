@@ -8,12 +8,11 @@ import org.springframework.stereotype.Repository;
 import com.police.evisitor.entity.DocFile;
 
 @Repository
-public interface DocFileRepository extends JpaRepository<DocFile, Integer> {
-
+public interface DocFileRepository extends JpaRepository<DocFile, Long> {
+	
 	DocFile findByDocIdAndRecordStatusNot(Long docId, String recordStatus);
 
 	List<DocFile> findByVisitorIdAndRecordStatusNot(Long visitorId, String recordStatus);
 
 	List<DocFile> findByDocIdInAndRecordStatusNot(List<Long> docIdList, String d);
-
 }

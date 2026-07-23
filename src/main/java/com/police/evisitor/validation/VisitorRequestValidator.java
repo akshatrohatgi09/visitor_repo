@@ -4,16 +4,25 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Set;
 
 import org.springframework.stereotype.Component;
 
+import com.police.evisitor.VisitorApplication;
 import com.police.evisitor.dto.request.VisitorRequestDTO;
 
 @Component
 public class VisitorRequestValidator {
+
+	private final VisitorApplication visitorApplication;
+
+	VisitorRequestValidator(VisitorApplication visitorApplication) {
+		this.visitorApplication = visitorApplication;
+	}
 
 	public String validateVisitorRequest(VisitorRequestDTO request) {
 		if (Objects.isNull(request)) {
@@ -62,7 +71,12 @@ public class VisitorRequestValidator {
 			return validationMessage;
 		}
 
-		validationMessage = validateName(request.getVisitorName());
+		validationMessage = validateName(request.getVisitorFirstName());
+		if (validationMessage != null) {
+			return validationMessage;
+		}
+
+		validationMessage = validateName(request.getVisitorLastName());
 		if (validationMessage != null) {
 			return validationMessage;
 		}
@@ -95,6 +109,35 @@ public class VisitorRequestValidator {
 		validationMessage = validateAddressFields(request);
 		if (validationMessage != null) {
 			return validationMessage;
+		}
+
+		validationMessage = validateDocAndPhotoIds(request.getDocIds(), request.getPhotoIds());
+		if (validationMessage != null) {
+			return validationMessage;
+		}
+
+		validationMessage = validateDocIds(request.getPhotoIds());
+		if (validationMessage != null) {
+			return validationMessage;
+		}
+
+		return null;
+	}
+
+	private String validateDocAndPhotoIds(List<Long> docIds, List<Long> photoIds) {
+
+		if (photoIds != null && photoIds.isEmpty()) {
+			return "PhotoIds cannot be empty";
+		}
+
+		if (docIds != null && photoIds != null) {
+
+			Set<Long> duplicateIds = new HashSet<>(docIds);
+			duplicateIds.retainAll(photoIds);
+
+			if (!duplicateIds.isEmpty()) {
+				return "Same file ID(s) cannot exist in both DocIds and PhotoIds: " + duplicateIds;
+			}
 		}
 
 		return null;

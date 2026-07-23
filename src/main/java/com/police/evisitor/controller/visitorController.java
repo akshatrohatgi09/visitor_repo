@@ -11,6 +11,7 @@ import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.police.evisitor.dto.request.VisitorCheckoutRequestDTO;
 import com.police.evisitor.dto.request.VisitorRequestDTO;
 import com.police.evisitor.dto.response.ApiResponse;
 import com.police.evisitor.service.VisitorService;
@@ -30,6 +31,13 @@ public class visitorController {
 		ApiResponse<?> apiResponse = ApiResponse.builder().status(String.valueOf(HttpStatus.CREATED))
 				.message("Visitor Added Successfully.").data(response).build();
 		return ResponseEntity.ok(apiResponse);
+	}
+	
+	@PostMapping("/checkout")
+	public ResponseEntity<Object> checkoutVisitor(
+	        @RequestBody VisitorCheckoutRequestDTO request) {
+
+	    return ResponseEntity.ok(visitorService.checkoutVisitor(request));
 	}
 
 }

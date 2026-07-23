@@ -26,6 +26,7 @@ import lombok.ToString;
 @AllArgsConstructor
 @Table(name = "t_documents")
 public class DocFile {
+
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	@Column(name = "doc_id")
