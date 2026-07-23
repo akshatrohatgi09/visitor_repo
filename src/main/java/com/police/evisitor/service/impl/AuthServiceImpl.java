@@ -54,7 +54,7 @@ public class AuthServiceImpl implements AuthService {
 
 			if (!passwordEncoder.matches(request.getPassword(), user.getUserPassword())) {
 
-				throw new BadRequestException("Invalid Password");
+				throw new BadRequestException("Invalid Id Password");
 			}
 
 			User entity = repository.findById(user.getUserId()).get();
