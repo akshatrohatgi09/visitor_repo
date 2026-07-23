@@ -1,8 +1,9 @@
 package com.police.evisitor.dto.response;
 
-import lombok.Data;
-
 import java.time.LocalDateTime;
+import java.util.List;
+
+import lombok.Data;
 
 @Data
 public class LoginResponseDTO {
@@ -52,4 +53,6 @@ public class LoginResponseDTO {
 	private LocalDateTime lastLoggedIn;
 
 	private String token;
+
+	private List<RoleMenuResponseDTO> menu;
 }
