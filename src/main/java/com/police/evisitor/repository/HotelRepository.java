@@ -87,8 +87,8 @@ public interface HotelRepository extends JpaRepository<Hotel, Long> {
 			h.district_cd AS districtCd,
 			d.district AS districtName,
 
-			h.sdpo_cd AS sdpoCd,
-			sd.sdpo_name AS sdpoName,
+			h.spdo_cd AS sdpoCd,
+			sd.spdo_name AS sdpoName,
 
 			h.ps_cd AS psCd,
 			ps.ps AS policeStationName,
@@ -111,8 +111,8 @@ public interface HotelRepository extends JpaRepository<Hotel, Long> {
 			LEFT JOIN m_district d
 			ON d.district_cd = h.district_cd
 
-			LEFT JOIN m_sdpo sd
-			ON sd.sdpo_cd = h.sdpo_cd
+			LEFT JOIN m_spdo sd
+			ON sd.spdo_cd = h.spdo_cd
 
 			LEFT JOIN m_police_station ps
 			ON ps.ps_cd = h.ps_cd
@@ -136,7 +136,7 @@ public interface HotelRepository extends JpaRepository<Hotel, Long> {
 			AND (:zoneCd IS NULL OR h.zone_cd = :zoneCd)
 			AND (:rangeCd IS NULL OR h.range_cd = :rangeCd)
 			AND (:districtCd IS NULL OR h.district_cd = :districtCd)
-			AND (:sdpoCd IS NULL OR h.sdpo_cd = :sdpoCd)
+			AND (:sdpoCd IS NULL OR h.spdo_cd = :sdpoCd)
 			AND (:psCd IS NULL OR h.ps_cd = :psCd)
 			AND (:hotelCd IS NULL OR h.hotel_id = :hotelCd)
 
@@ -176,7 +176,7 @@ public interface HotelRepository extends JpaRepository<Hotel, Long> {
 					AND (:zoneCd IS NULL OR h.zone_cd = :zoneCd)
 					AND (:rangeCd IS NULL OR h.range_cd = :rangeCd)
 					AND (:districtCd IS NULL OR h.district_cd = :districtCd)
-					AND (:sdpoCd IS NULL OR h.sdpo_cd = :sdpoCd)
+					AND (:sdpoCd IS NULL OR h.spdo_cd = :sdpoCd)
 					AND (:psCd IS NULL OR h.ps_cd = :psCd)
 					AND (:hotelCd IS NULL OR h.hotel_id = :hotelCd)
 

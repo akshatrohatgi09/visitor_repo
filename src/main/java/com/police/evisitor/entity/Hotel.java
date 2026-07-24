@@ -54,7 +54,7 @@ public class Hotel {
 	@Column(name = "district_cd")
 	private Integer districtCd;
 
-	@Column(name = "sdpo_cd")
+	@Column(name = "spdo_cd")
 	private Integer sdpoCd;
 
 	@Column(name = "ps_cd")

@@ -11,7 +11,7 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 @Entity
-@Table(name = "m_sdpo")
+@Table(name = "m_spdo")
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
@@ -19,10 +19,10 @@ public class Sdpo {
 
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
-	@Column(name = "sdpo_id")
+	@Column(name = "spdo_id")
 	private Long sdpoId;
 
-	@Column(name = "sdpo_cd")
+	@Column(name = "spdo_cd")
 	private Integer sdpoCd;
 
 	@Column(name = "state_cd")
@@ -37,10 +37,10 @@ public class Sdpo {
 	@Column(name = "district_cd")
 	private Integer districtCd;
 
-	@Column(name = "sdpo_name")
+	@Column(name = "spdo_name")
 	private String sdpoName;
 
-	@Column(name = "sdpo_description")
+	@Column(name = "spdo_description")
 	private String sdpoDescription;
 
 	@Column(name = "record_status")

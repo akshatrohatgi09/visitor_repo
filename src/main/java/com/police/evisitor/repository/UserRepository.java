@@ -53,8 +53,8 @@ public interface UserRepository extends JpaRepository<User, Long> {
 			u.district_cd AS districtCd,
 			d.district AS districtName,
 
-			u.sdpo_cd AS sdpoCd,
-			sd.sdpo_name AS sdpoName,
+			u.spdo_cd AS sdpoCd,
+			sd.spdo_name AS sdpoName,
 
 			u.ps_cd AS psCd,
 			ps.ps AS policeStationName,
@@ -95,8 +95,8 @@ public interface UserRepository extends JpaRepository<User, Long> {
 			LEFT JOIN m_district d
 			    ON d.district_cd = u.district_cd
 
-			LEFT JOIN m_sdpo sd
-			    ON sd.sdpo_cd = u.sdpo_cd
+			LEFT JOIN m_spdo sd
+			    ON sd.spdo_cd = u.spdo_cd
 
 			LEFT JOIN m_police_station ps
 			    ON ps.ps_cd = u.ps_cd
@@ -114,7 +114,7 @@ public interface UserRepository extends JpaRepository<User, Long> {
 			AND (:zoneCd IS NULL OR u.zone_cd = :zoneCd)
 			AND (:rangeCd IS NULL OR u.range_cd = :rangeCd)
 			AND (:districtCd IS NULL OR u.district_cd = :districtCd)
-			AND (:sdpoCd IS NULL OR u.sdpo_cd = :sdpoCd)
+			AND (:sdpoCd IS NULL OR u.spdo_cd = :sdpoCd)
 			AND (:psCd IS NULL OR u.ps_cd = :psCd)
 			AND (:hotelCd IS NULL OR u.hotel_cd = :hotelCd)
 
@@ -164,7 +164,7 @@ public interface UserRepository extends JpaRepository<User, Long> {
 					AND (:zoneCd IS NULL OR u.zone_cd = :zoneCd)
 					AND (:rangeCd IS NULL OR u.range_cd = :rangeCd)
 					AND (:districtCd IS NULL OR u.district_cd = :districtCd)
-					AND (:sdpoCd IS NULL OR u.sdpo_cd = :sdpoCd)
+					AND (:sdpoCd IS NULL OR u.spdo_cd = :sdpoCd)
 					AND (:psCd IS NULL OR u.ps_cd = :psCd)
 					AND (:hotelCd IS NULL OR u.hotel_cd = :hotelCd)
 
@@ -235,8 +235,8 @@ public interface UserRepository extends JpaRepository<User, Long> {
 			d.district_cd AS districtCd,
 			d.district AS district,
 
-			sd.sdpo_cd AS sdpoCd,
-			sd.sdpo_name AS sdpoName,
+			sd.spdo_cd AS sdpoCd,
+			sd.spdo_name AS sdpoName,
 
 			ps.ps_cd AS psCd,
 			ps.ps AS ps,
@@ -269,8 +269,8 @@ public interface UserRepository extends JpaRepository<User, Long> {
 			LEFT JOIN m_district d
 			ON u.district_cd=d.district_cd
 
-			LEFT JOIN m_sdpo sd
-			ON u.sdpo_cd=sd.sdpo_cd
+			LEFT JOIN m_spdo sd
+			ON u.spdo_cd=sd.spdo_cd
 
 			LEFT JOIN m_police_station ps
 			ON u.ps_cd=ps.ps_cd
