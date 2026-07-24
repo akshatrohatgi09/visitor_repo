@@ -41,10 +41,10 @@ public class VisitorRequestValidator {
 			return validationMessage;
 		}
 
-		validationMessage = validateDocIds(request.getDocIds());
-		if (validationMessage != null) {
-			return validationMessage;
-		}
+//		validationMessage = validateDocIds(request.getDocIds());
+//		if (validationMessage != null) {
+//			return validationMessage;
+//		}
 
 		validationMessage = validateRoomNumber(request.getRoomNo());
 		if (validationMessage != null) {
@@ -116,10 +116,10 @@ public class VisitorRequestValidator {
 			return validationMessage;
 		}
 
-		validationMessage = validateDocIds(request.getPhotoIds());
-		if (validationMessage != null) {
-			return validationMessage;
-		}
+//		validationMessage = validateDocIds(request.getPhotoIds());
+//		if (validationMessage != null) {
+//			return validationMessage;
+//		}
 
 		return null;
 	}
