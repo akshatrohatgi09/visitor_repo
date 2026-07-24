@@ -24,9 +24,6 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 		this.jwtUtility = jwtUtility;
 	}
 
-	/**
-	 * Skip JWT validation for public APIs.
-	 */
 	@Override
 	protected boolean shouldNotFilter(HttpServletRequest request) {
 

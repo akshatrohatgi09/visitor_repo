@@ -110,21 +110,17 @@ public class UserServiceImpl implements UserService {
 
 			log.info("Create User Request : {}", reqDto);
 
-			// Validate Role
 			Role role = roleRepository.findById(reqDto.getRoleId())
 					.orElseThrow(() -> new RuntimeException("Role Not Found : " + reqDto.getRoleId()));
 
-			// Validate hierarchy based on role
 			validateRoleHierarchy(role.getRoleId(), reqDto);
 
-			// Validate master data
 			validateMasterData(reqDto);
 
 			User user = modelMapper.map(reqDto, User.class);
 
 			user.setUserLogin(reqDto.getUserLogin().trim().toLowerCase());
 
-			// Duplicate Validation
 			isUserAlreadyExist(user);
 
 			user.setUserRoleId(reqDto.getRoleId());

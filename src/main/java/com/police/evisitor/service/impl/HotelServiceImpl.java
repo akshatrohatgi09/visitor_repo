@@ -277,14 +277,13 @@ public class HotelServiceImpl implements HotelService {
 			return "Hotel Id Can't be NULL";
 
 		try {
-			// Soft Delete Hotel from DataBase
+
 			Hotel hotel = hotelRepo.findByHotelIdAndRecordStatusNot(hotelId, Constants.D)
 					.orElseThrow(() -> new NotFound("Hotel Not Found With ID: " + hotelId));
 			hotel.setRecordStatus(Constants.D);
 			hotel.setUpdatedBy(request.getLoginUser());
 			hotelRepo.save(hotel);
 
-			// Soft Delete Respective Hotel Users from DataBase
 			List<User> hotelUsers = userRepository.findByHotelCdAndRecordStatusNot(hotel.getHotelId(), Constants.d);
 			List<User> hotelUsersToDelete = new ArrayList<>();
 			hotelUsers.forEach(user -> {
@@ -310,7 +309,7 @@ public class HotelServiceImpl implements HotelService {
 		String operation = request.getOperation();
 		String response = "";
 		try {
-			// Soft Delete Hotel from DataBase
+
 			Hotel hotel = hotelRepo.findByHotelId(hotelId)
 					.orElseThrow(() -> new NotFound("Hotel Not Found With ID: " + hotelId));
 
@@ -329,7 +328,6 @@ public class HotelServiceImpl implements HotelService {
 			hotel.setComment(request.getComment());
 			hotelRepo.save(hotel);
 
-			// Soft Delete Respective Hotel Users from DataBase
 			if (operation.equals("Deactivate")) {
 
 				List<User> hotelUsers = userRepository.findByHotelCdAndRecordStatusNot(hotel.getHotelId(), Constants.d);
@@ -459,7 +457,7 @@ public class HotelServiceImpl implements HotelService {
 			hotel.setDistrictCd(req.getDistrictCd());
 			hotel.setSdpoCd(req.getSdpoCd());
 			hotel.setPsCd(req.getPsCd());
-			
+
 			Integer hotelTypeId = req.getHotelTypeId().intValue();
 			hotel.setHotelTypeId(hotelTypeId);
 

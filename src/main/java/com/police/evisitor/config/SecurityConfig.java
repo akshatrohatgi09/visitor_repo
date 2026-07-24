@@ -30,20 +30,16 @@ public class SecurityConfig {
 
 		http.cors(cors -> cors.configurationSource(corsConfigurationSource())).csrf(csrf -> csrf.disable())
 
-				// JWT applications should be stateless
 				.sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
 
 				.authorizeHttpRequests(auth -> auth
 
-						// Public APIs
 						.requestMatchers("/visitor/login", "/register", "/swagger-ui/**", "/v3/api-docs/**",
 								"/swagger-resources/**", "/webjars/**", "/actuator/**")
 						.permitAll()
 
-						// Everything else requires JWT
 						.anyRequest().authenticated())
 
-				// JWT Filter
 				.addFilterBefore(jwtFilter, UsernamePasswordAuthenticationFilter.class);
 
 		return http.build();

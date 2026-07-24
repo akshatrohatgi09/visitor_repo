@@ -6,6 +6,7 @@ import lombok.Data;
 
 @Data
 public class RoleRequestDTO {
+
 	private Integer roleMenu;
 	private Long role;
 	private List<Integer> menu;

@@ -15,17 +15,14 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 public class UserListRequestDTO {
 
-	// Logged In User
 	private String loginId;
 
-	// Search
 	private String name;
 
 	private String userLogin;
 
 	private String mobile;
 
-	// Filters
 	private Integer stateCd;
 
 	private Integer zoneCd;

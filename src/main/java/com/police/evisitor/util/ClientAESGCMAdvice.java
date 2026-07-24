@@ -41,7 +41,6 @@ public class ClientAESGCMAdvice implements RequestBodyAdvice, ResponseBodyAdvice
 			Class<? extends HttpMessageConverter<?>> converterType) {
 		Method method = methodParameter.getMethod();
 		return addAdviceAnnotation(method);
-		// return true;
 	}
 
 	private boolean addAdviceAnnotation(Method method) {
@@ -73,7 +72,6 @@ public class ClientAESGCMAdvice implements RequestBodyAdvice, ResponseBodyAdvice
 			String decryptedData = masterCrypto.decrypt(encryptedData,encryptedKey, encodeBase64IV );
 
 			log.info(" RequestRespModifyAdvice beforeBodyRead decryptedData {} ", decryptedData);
-			// adding encryptionKey so we can resuse while encrypting the response
 
 			return new HttpInputMessage() {
 				@Override
@@ -117,7 +115,6 @@ public class ClientAESGCMAdvice implements RequestBodyAdvice, ResponseBodyAdvice
 	public boolean supports(MethodParameter returnType, Class converterType) {
 		Method method = returnType.getMethod();
 		return addAdviceAnnotation(method);
-		// return true;
 	}
 
 	@Override
@@ -133,7 +130,6 @@ public class ClientAESGCMAdvice implements RequestBodyAdvice, ResponseBodyAdvice
 			String jsonObject = "";
 			if (body != null) {
 				jsonObject = body.toString();
-				// initVector should be encoded while decrypting
 				log.info("RequestRespModifyAdvice beforeBodyWrite initVector {} ", encodeBase64IV);
 				apiResponse.put("v1", masterCrypto.encrypt(jsonObject, encryptionKey, encodeBase64IV));
 				apiResponse.put("v2", encodeBase64IV);

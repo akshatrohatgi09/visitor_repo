@@ -36,14 +36,6 @@ public class FileCompressionUtil {
 	private static final long KB = 1024;
 	private static final long MB = 1024 * KB;
 
-	/**
-	 * Compresses the given file if its size exceeds the target threshold. Supports
-	 * image/* and application/pdf content types.
-	 *
-	 * @param file the uploaded multipart file
-	 * @return compressed (or original) bytes
-	 * @throws IOException on read/write failure
-	 */
 	public byte[] compressIfRequired(MultipartFile file) throws IOException {
 		long fileSize = file.getSize();
 		long targetSize = getTargetSize(fileSize);
@@ -55,7 +47,7 @@ public class FileCompressionUtil {
 		String contentType = file.getContentType();
 
 		if (contentType != null && contentType.startsWith("image/")) {
-			return compressImage(file.getBytes(), targetSize, contentType); // pass contentType
+			return compressImage(file.getBytes(), targetSize, contentType);
 		}
 
 		if ("application/pdf".equalsIgnoreCase(contentType)) {
@@ -65,9 +57,6 @@ public class FileCompressionUtil {
 		return file.getBytes();
 	}
 
-	/**
-	 * Returns the desired compressed size (in bytes) based on the original size.
-	 */
 	private long getTargetSize(long fileSize) {
 		if (fileSize >= 5 * MB)
 			return 200 * KB;
@@ -80,9 +69,6 @@ public class FileCompressionUtil {
 		return fileSize;
 	}
 
-	/**
-	 * Iteratively reduces JPEG quality until the output fits within targetSize.
-	 */
 	private byte[] compressImage(byte[] imageBytes, long targetSize, String contentType) throws IOException {
 
 		BufferedImage originalImage = ImageIO.read(new ByteArrayInputStream(imageBytes));
@@ -91,12 +77,9 @@ public class FileCompressionUtil {
 
 		boolean isPng = "image/png".equalsIgnoreCase(contentType);
 
-		// PNG: convert with white background (handles transparency)
-		// JPG: convert to RGB directly
 		BufferedImage rgbImage = toRgbImage(originalImage);
 
-		// Step 1: Quality reduction (works for both JPG and PNG)
-		float startQuality = isPng ? 0.75f : 0.85f; // PNG needs more aggressive start
+		float startQuality = isPng ? 0.75f : 0.85f;
 		float quality = startQuality;
 
 		while (quality > 0.05f) {
@@ -107,9 +90,7 @@ public class FileCompressionUtil {
 			quality -= 0.05f;
 		}
 
-		// Step 2: Dimension reduction (mainly needed for PNG, but applied to both if
-		// still large)
-		double scale = isPng ? 0.8 : 0.9; // PNG starts scaling more aggressively
+		double scale = isPng ? 0.8 : 0.9;
 		double minScale = isPng ? 0.1 : 0.2;
 
 		while (scale >= minScale) {
@@ -132,7 +113,6 @@ public class FileCompressionUtil {
 			scale -= isPng ? 0.1 : 0.1;
 		}
 
-		// Best effort
 		return encodeAsJpeg(rgbImage, 0.05f);
 	}
 
@@ -152,14 +132,6 @@ public class FileCompressionUtil {
 		return rgbImage;
 	}
 
-	/**
-	 * Compresses a PDF by: 1. Re-encoding all embedded images at progressively
-	 * lower JPEG quality. 2. Applying PDFBox object-stream / deflate compression on
-	 * the structure.
-	 *
-	 * Two passes are used: - Pass 1 (moderate): quality 0.75 → fast, good quality.
-	 * - Pass 2 (aggressive loop): quality 0.60 → 0.20, stepping −0.10 each round.
-	 */
 	private byte[] compressPdf(byte[] pdfBytes, long targetSize) throws IOException {
 
 		try (PDDocument document = PDDocument.load(pdfBytes)) {
@@ -199,7 +171,6 @@ public class FileCompressionUtil {
 
 		final double finalScale = scale;
 
-		// Encode all images in parallel
 		int threadCount = Math.min(entries.size(), Runtime.getRuntime().availableProcessors());
 		ExecutorService executor = Executors.newFixedThreadPool(threadCount);
 
@@ -223,8 +194,6 @@ public class FileCompressionUtil {
 				}));
 			}
 
-			// Collect results and replace images (must be done on single thread — PDFBox
-			// not thread-safe)
 			for (int i = 0; i < entries.size(); i++) {
 				try {
 					byte[] jpegBytes = futures.get(i).get();
@@ -256,9 +225,6 @@ public class FileCompressionUtil {
 		}
 	}
 
-	/**
-	 * Encodes a BufferedImage as a JPEG byte array at the given quality (0.0–1.0).
-	 */
 	private byte[] encodeAsJpeg(BufferedImage image, float quality) throws IOException {
 		ByteArrayOutputStream baos = new ByteArrayOutputStream();
 
@@ -305,41 +271,10 @@ public class FileCompressionUtil {
 						entries.add(new ImageEntry(name, page, image));
 					}
 				} catch (IOException e) {
-					// skip unreadable images
 				}
 			}
 		}
 		return entries;
-	}
-
-	private void replaceAllImages(PDDocument document, List<ImageEntry> entries, float quality) throws IOException {
-
-		double scale = 1.0;
-		if (quality <= 0.30f)
-			scale = 0.5;
-		else if (quality <= 0.50f)
-			scale = 0.7;
-
-		for (ImageEntry entry : entries) {
-			PDResources resources = entry.page.getResources();
-			if (resources == null)
-				continue;
-
-			int newWidth = (int) (entry.originalImage.getWidth() * scale);
-			int newHeight = (int) (entry.originalImage.getHeight() * scale);
-
-			BufferedImage resized = new BufferedImage(newWidth, newHeight, BufferedImage.TYPE_INT_RGB);
-			Graphics2D g = resized.createGraphics();
-			g.setRenderingHint(RenderingHints.KEY_INTERPOLATION, RenderingHints.VALUE_INTERPOLATION_BILINEAR);
-			g.setColor(Color.WHITE);
-			g.fillRect(0, 0, newWidth, newHeight);
-			g.drawImage(entry.originalImage, 0, 0, newWidth, newHeight, null);
-			g.dispose();
-
-			byte[] jpegBytes = encodeAsJpeg(resized, quality);
-			PDImageXObject compressed = PDImageXObject.createFromByteArray(document, jpegBytes, entry.name.getName());
-			resources.put(entry.name, compressed);
-		}
 	}
 
 }

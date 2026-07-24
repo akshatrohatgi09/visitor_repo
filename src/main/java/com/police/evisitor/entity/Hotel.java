@@ -90,8 +90,6 @@ public class Hotel {
 	@Column(name = "beat_number")
 	private String beatNumber;
 
-	// Owner Details
-
 	@Column(name = "owner_address")
 	private String ownerAddress;
 
@@ -103,8 +101,6 @@ public class Hotel {
 
 	@Column(name = "owner_pincode")
 	private String ownerPincode;
-
-	// Manager Details
 
 	@Column(name = "manager_name")
 	private String managerName;

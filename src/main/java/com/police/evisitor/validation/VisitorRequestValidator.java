@@ -180,19 +180,16 @@ public class VisitorRequestValidator {
 	}
 
 	private String validateCheckInDate(LocalDateTime checkInDate) {
-		// Null Check
 		if (Objects.isNull(checkInDate)) {
 			return "Check-In Date is mandatory";
 		}
 
 		LocalDateTime now = LocalDateTime.now();
 
-		// Future Date Not Allowed
 		if (checkInDate.isAfter(now)) {
 			return "Future Check-In Date is not allowed";
 		}
 
-		// Allow back date only till last 1 month
 		LocalDateTime oneMonthBack = now.minusMonths(1);
 
 		if (checkInDate.isBefore(oneMonthBack)) {
@@ -203,7 +200,6 @@ public class VisitorRequestValidator {
 	}
 
 	private String validateCheckOutDate(LocalDateTime checkOutDate) {
-		// Null Check
 		if (!Objects.isNull(checkOutDate)) {
 			return "Check-Out Date is not required";
 		}
@@ -216,7 +212,6 @@ public class VisitorRequestValidator {
 			return "Visit Reason Type is required";
 		}
 
-		// Example: 11 = Other
 		if (request.getVisitReasonType() == 11
 				&& (request.getVisitReason() == null || request.getVisitReason().trim().isEmpty())) {
 			return "Visit Reason is mandatory when Visit Reason Type is Other";
@@ -294,7 +289,6 @@ public class VisitorRequestValidator {
 		}
 
 		LocalDate now = LocalDate.now();
-		// Future Date Not Allowed
 		if (dateOfBirth.isAfter(now)) {
 			return "Future Date of birth is not allowed";
 		}
